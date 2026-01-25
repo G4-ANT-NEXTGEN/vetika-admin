@@ -1,11 +1,11 @@
-import { reactive, computed } from 'vue'
+import { reactive, computed, isReactive } from 'vue'
 
 /**
  * Form validation composable
  * Manages form state, validation rules, and error messages
  */
 export function useFormValidation(initialValues = {}, rules = {}) {
-    const formData = reactive({ ...initialValues })
+    const formData = isReactive(initialValues) ? initialValues : reactive({ ...initialValues })
     const errors = reactive({})
     const touched = reactive({})
     const isDirty = reactive({})
@@ -14,33 +14,33 @@ export function useFormValidation(initialValues = {}, rules = {}) {
      * Validation rules registry
      */
     const validationRules = {
-        required: (value) => {
+        required: (message = 'This field is required') => (value) => {
             if (Array.isArray(value)) {
-                return value.length > 0 || 'This field is required'
+                return value.length > 0 || message
             }
-            return (value && value.toString().trim() !== '') || 'This field is required'
+            return (value && value.toString().trim() !== '') || message
         },
 
-        email: (value) => {
+        email: (message = 'Please enter a valid email address') => (value) => {
             if (!value) return true
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-            return emailRegex.test(value) || 'Please enter a valid email address'
+            return emailRegex.test(value) || message
         },
 
-        minLength: (min) => (value) => {
-            return (value && value.length >= min) || `Minimum length is ${min} characters`
+        minLength: (min, message) => (value) => {
+            return (value && value.length >= min) || message || `Minimum length is ${min} characters`
         },
 
-        maxLength: (max) => (value) => {
-            return (value && value.length <= max) || `Maximum length is ${max} characters`
+        maxLength: (max, message) => (value) => {
+            return (value && value.length <= max) || message || `Maximum length is ${max} characters`
         },
 
-        min: (min) => (value) => {
-            return value >= min || `Value must be at least ${min}`
+        min: (min, message) => (value) => {
+            return value >= min || message || `Value must be at least ${min}`
         },
 
-        max: (max) => (value) => {
-            return value <= max || `Value must be at most ${max}`
+        max: (max, message) => (value) => {
+            return value <= max || message || `Value must be at most ${max}`
         },
 
         pattern: (pattern, message) => (value) => {
@@ -48,8 +48,18 @@ export function useFormValidation(initialValues = {}, rules = {}) {
             return regex.test(value) || !value || message || 'Invalid format'
         },
 
-        matches: (fieldName) => (value, allValues) => {
-            return value === allValues[fieldName] | `Fields do not match`
+        matches: (fieldName, message) => (value, allValues) => {
+            return value === allValues[fieldName] || message || `Fields do not match`
+        },
+
+        url: (message = 'Please enter a valid URL') => (value) => {
+            if (!value) return true
+            try {
+                new URL(value)
+                return true
+            } catch {
+                return message
+            }
         },
 
         custom: (validatorFn) => validatorFn,
@@ -70,12 +80,17 @@ export function useFormValidation(initialValues = {}, rules = {}) {
             if (typeof rule === 'function') {
                 validator = rule
             } else if (typeof rule === 'string') {
-                validator = validationRules[rule]
+                validator = validationRules[rule]()
             } else if (typeof rule === 'object') {
-                const [ruleName, ...args] = Object.entries(rule)[0]
+                const [ruleName, ruleConfig] = Object.entries(rule)[0]
                 const ruleFunc = validationRules[ruleName]
-                if (typeof ruleFunc === 'function' && args[0]) {
-                    validator = ruleFunc(...args)
+
+                if (typeof ruleFunc === 'function') {
+                    if (Array.isArray(ruleConfig)) {
+                         validator = ruleFunc(...ruleConfig)
+                    } else {
+                         validator = ruleFunc(ruleConfig)
+                    }
                 } else {
                     validator = ruleFunc
                 }
@@ -205,13 +220,14 @@ export function useFormValidation(initialValues = {}, rules = {}) {
 /**
  * Quick validation rules preset
  */
-export const ValidationRules = {
-    required: 'required',
-    email: 'email',
-    minLength: (min) => ({ minLength: min }),
-    maxLength: (max) => ({ maxLength: max }),
-    min: (min) => ({ min: min }),
-    max: (max) => ({ max: max }),
+export const validationRules = {
+    required: (message) => ({ required: message }),
+    email: (message) => ({ email: message }),
+    minLength: (min, message) => ({ minLength: [min, message] }),
+    maxLength: (max, message) => ({ maxLength: [max, message] }),
+    min: (min, message) => ({ min: [min, message] }),
+    max: (max, message) => ({ max: [max, message] }),
     pattern: (pattern, message) => ({ pattern: [pattern, message] }),
-    matches: (fieldName) => ({ matches: fieldName }),
+    matches: (fieldName, message) => ({ matches: [fieldName, message] }),
+    url: (message) => ({ url: message }),
 }

@@ -4,7 +4,7 @@
       <div class="main-nav-start">
         <div class="search-wrapper">
           <i class="bi bi-search search-icon"></i>
-          <input type="text" id="searchInput" placeholder="Enter keywords ..." required>
+          <input type="text" id="searchInput" placeholder="Enter keywords ..." autocomplete="off" required>
         </div>
       </div>
       <div class="main-nav-end">
@@ -70,12 +70,13 @@ const authStore = useAuthStore();
 
 defineProps({
   authToken: {
-    type: String,
-    required: true
+    type: [String, Object],
+    required: false,
+    default: null
   }
 });
 
-defineEmits(['toggle-sidebar', 'logout']);
+const emit = defineEmits(['toggle-sidebar', 'logout']);
 
 const isDarkMode = ref(localStorage.getItem('darkMode') === 'enabled');
 const isNotificationOpen = ref(false);
@@ -102,13 +103,8 @@ const toggleTheme = () => {
   setTheme(isDarkMode.value);
 };
 
-const handleLogout = async () => {
-  try {
-    await authStore.logout();
-    window.location.reload();
-  } catch (err) {
-    console.error('Logout error:', err);
-  }
+const handleLogout = () => {
+  emit('logout');
 };
 
 const fetchUserProfile = async () => {
@@ -152,8 +148,9 @@ onMounted(() => {
 }
 
 .notification-dropdown-icon.info {
-  background-color: rgba(13, 110, 253, 0.1);
-  color: #0d6efd;
+  background-color: var(--color-primary);
+  opacity: 0.1;
+  color: var(--color-primary);
 }
 
 .notification-dropdown li button,
@@ -211,7 +208,7 @@ onMounted(() => {
 }
 
 .link-to-page {
-  color: #0d6efd !important;
+  color: var(--color-primary) !important;
   font-weight: 600;
   text-align: center;
   padding: 10px 12px !important;
@@ -219,7 +216,8 @@ onMounted(() => {
 }
 
 .link-to-page:hover {
-  background-color: rgba(13, 110, 253, 0.08) !important;
+  background-color: var(--color-primary);
+  opacity: 0.08;
 }
 
 .users-item-dropdown {
@@ -255,12 +253,13 @@ onMounted(() => {
 
 .users-item-dropdown li a.danger,
 .users-item-dropdown li button.danger {
-  color: #dc3545;
+  color: var(--color-danger);
 }
 
 .users-item-dropdown li a.danger:hover,
 .users-item-dropdown li button.danger:hover {
-  background-color: rgba(220, 53, 69, 0.1);
+  background-color: var(--color-danger);
+  opacity: 0.1;
 }
 
 .notification-dropdown {
@@ -310,7 +309,7 @@ onMounted(() => {
 .nav-user-inline:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
-  border-color: #0d6efd33;
+  border-color: var(--color-text);
 }
 
 .nav-user-name {

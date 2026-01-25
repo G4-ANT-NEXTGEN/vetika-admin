@@ -30,28 +30,31 @@
 
           <form @submit.prevent="handleLogin" class="login-form" novalidate>
             <div class="form-group">
-              <label for="email">Email</label>
-              <div class="input-wrapper">
-                <i class="bi bi-envelope"></i>
-                <input type="email" id="email" v-model="email" placeholder="Input your email"
-                  :class="{ 'is-invalid': errors.email }" @blur="validateEmail" @input="errors.email = ''"
-                  autocomplete="email">
-              </div>
-              <span class="validation-error" v-if="errors.email">{{ errors.email }}</span>
+              <BaseInput
+                v-model="email"
+                id="email"
+                label="Email"
+                type="email"
+                placeholder="Input your email"
+                icon="bi-envelope"
+                :error="errors.email"
+                @blur="validate('email')"
+                autocomplete="email"
+              />
             </div>
 
             <div class="form-group">
-              <label for="password">Password</label>
-              <div class="input-wrapper">
-                <i class="bi bi-lock"></i>
-                <input :type="showPassword ? 'text' : 'password'" id="password" v-model="password"
-                  placeholder="Input your password" :class="{ 'is-invalid': errors.password }" @blur="validatePassword"
-                  @input="errors.password = ''" autocomplete="current-password">
-                <button type="button" class="toggle-password" @click="showPassword = !showPassword">
-                  <i class="bi" :class="showPassword ? 'bi-eye-slash' : 'bi-eye'"></i>
-                </button>
-              </div>
-              <span class="validation-error" v-if="errors.password">{{ errors.password }}</span>
+              <BaseInput
+                v-model="password"
+                id="password"
+                label="Password"
+                type="password"
+                placeholder="Input your password"
+                icon="bi-lock"
+                :error="errors.password"
+                @blur="validate('password')"
+                autocomplete="current-password"
+              />
             </div>
 
             <button type="submit" class="login-btn" :class="{ 'is-loading': loading }" :disabled="loading">
@@ -68,57 +71,44 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useToast } from '@/composables/useToast';
+import BaseInput from '@/components/ui/base/BaseInput.vue';
+import { useFormValidation, validationRules } from '@/composables/useFormValidation';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { add: addToast } = useToast();
 
-const email = ref('');
-const password = ref('');
-const showPassword = ref(false);
-const loading = ref(false);
-const errors = ref({
+const form = reactive({
   email: '',
   password: ''
 });
 
-const validateEmail = () => {
-  if (!email.value) {
-    errors.value.email = 'Email is required';
-    return false;
-  }
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailPattern.test(email.value)) {
-    errors.value.email = 'Please enter a valid email address';
-    return false;
-  }
-  errors.value.email = '';
-  return true;
-};
+const { errors, validateField: validate, validate: validateAll } = useFormValidation(form, {
+  email: [validationRules.required('Email is required'), validationRules.email()],
+  password: [
+    validationRules.required('Password is required'),
+    validationRules.minLength(6, 'Password must be at least 6 characters')
+  ]
+});
 
-const validatePassword = () => {
-  if (!password.value) {
-    errors.value.password = 'Password is required';
-    return false;
-  }
-  if (password.value.length < 6) {
-    errors.value.password = 'Password must be at least 6 characters';
-    return false;
-  }
-  errors.value.password = '';
-  return true;
-};
+const email = computed({
+  get: () => form.email,
+  set: (val) => form.email = val
+});
+
+const password = computed({
+  get: () => form.password,
+  set: (val) => form.password = val
+});
+
+const loading = ref(false);
 
 const handleLogin = async () => {
-  // Validate all fields
-  const isEmailValid = validateEmail();
-  const isPasswordValid = validatePassword();
-
-  if (!isEmailValid || !isPasswordValid) {
+  if (!validateAll()) {
     return;
   }
 
@@ -126,21 +116,38 @@ const handleLogin = async () => {
 
   try {
     await authStore.login({
-      email: email.value,
-      password: password.value,
+      email: form.email,
+      password: form.password,
     });
     addToast({
       message: 'Login successful! Redirecting...',
       type: 'success',
-      duration: 2000
+      duration: 3000
     });
     router.push({ name: "dashboard" });
   } catch (error) {
-    console.error('Login error:', error);
+    // Extract the most descriptive error message possible
+    const errorData = error.response?.data;
+    let errorMessage = 'Login failed. Please check your credentials.';
+
+    if (errorData) {
+      if (typeof errorData === 'string') {
+        errorMessage = errorData;
+      } else if (errorData.message) {
+        errorMessage = errorData.message;
+      } else if (errorData.error) {
+        errorMessage = errorData.error;
+      } else if (errorData.errors) {
+        // Handle validation errors (422) by taking the first error message
+        const firstError = Object.values(errorData.errors).flat()[0];
+        if (firstError) errorMessage = firstError;
+      }
+    }
+
     addToast({
-      message: 'An error occurred. Please try again later.',
+      message: errorMessage,
       type: 'error',
-      duration: 4000
+      duration: 5000
     });
   } finally {
     loading.value = false;
@@ -154,7 +161,7 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f5f5f7;
+  background: var(--color-background);
   padding: 20px;
 }
 
@@ -163,7 +170,8 @@ const handleLogin = async () => {
   width: calc(80vw - 40px);
   height: calc(90vh - 40px);
   max-width: 100%;
-  background: #ffffff;
+  background: var(--color-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -235,7 +243,7 @@ const handleLogin = async () => {
 
 .login-right {
   flex: 1;
-  background: #ffffff;
+  background: var(--color-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -254,7 +262,7 @@ const handleLogin = async () => {
 .login-header h2 {
   font-size: 32px;
   font-weight: 700;
-  color: #0a0a0a;
+  color: var(--color-text);
   margin: 0 0 12px 0;
 }
 
@@ -273,108 +281,22 @@ const handleLogin = async () => {
 
 .form-group {
   display: flex;
-  flex-direction: column;
   gap: 8px;
 }
 
-.form-group label {
-  font-size: 14px;
+.form-group :deep(.form-label) {
+  color: var(--color-text) !important;
   font-weight: 600;
-  color: #0a0a0a;
+  margin-bottom: 6px;
 }
 
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-wrapper>i {
-  position: absolute;
-  left: 16px;
-  color: #7a7a7a;
-  font-size: 18px;
-  pointer-events: none;
-}
-
-.input-wrapper input {
-  width: 100%;
-  padding: 14px 16px 14px 48px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 14px;
-  background: #fafafa;
-  color: #0a0a0a;
-  transition: all 0.2s ease;
-}
-
-.input-wrapper input:focus {
-  outline: none;
-  border-color: #0a0a0a;
-  background: #ffffff;
-}
-
-.input-wrapper input.is-invalid {
-  border-color: #dc3545;
-  background: #fff5f5;
-}
-
-.input-wrapper input.is-invalid:focus {
-  border-color: #dc3545;
-  box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-}
-
-.input-wrapper input::placeholder {
-  color: #a0a0a0;
-}
-
-.validation-error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: -4px;
-  display: block;
-  animation: slideDown 0.2s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-5px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.toggle-password {
-  position: absolute;
-  right: 16px;
-  background: transparent;
-  border: none;
-  color: #7a7a7a;
-  cursor: pointer;
-  padding: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease;
-}
-
-.toggle-password:hover {
-  color: #0a0a0a;
-}
-
-.toggle-password i {
-  font-size: 18px;
-}
+/* Removed .input-wrapper, .toggle-password and manual validation styles */
 
 .login-btn {
   width: 100%;
   padding: 16px;
-  background: #0a0a0a;
-  color: #ffffff;
+  background: var(--color-text);
+  color: var(--color-secondary);
   border: none;
   border-radius: 8px;
   font-size: 16px;

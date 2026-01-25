@@ -145,18 +145,21 @@ const handleCancel = () => {
 }
 
 .confirm-header .confirm-icon-wrapper {
-    background-color: rgba(255, 193, 7, 0.2);
-    color: #ffc107;
+    background-color: var(--color-primary);
+    opacity: 0.2;
+    color: var(--color-primary);
 }
 
 .confirm-overlay :deep(.btn-danger)~.confirm-icon-wrapper {
-    background-color: rgba(220, 53, 69, 0.2);
-    color: #dc3545;
+    background-color: var(--color-danger);
+    opacity: 0.2;
+    color: var(--color-danger);
 }
 
 .confirm-overlay :deep(.btn-info)~.confirm-icon-wrapper {
-    background-color: rgba(23, 162, 184, 0.2);
-    color: #17a2b8;
+    background-color: var(--color-primary);
+    opacity: 0.2;
+    color: var(--color-primary);
 }
 
 .confirm-body {
@@ -194,6 +197,27 @@ const handleCancel = () => {
 
 .confirm-footer .btn {
     min-width: 100px;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.btn-danger {
+    background-color: var(--color-danger);
+    border-color: var(--color-danger);
+    color: #fff;
+}
+
+.btn-info {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+.btn-warning {
+    background-color: #eab308;
+    border-color: #eab308;
+    color: #fff;
 }
 
 .confirm-footer .btn:disabled {

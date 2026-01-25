@@ -80,11 +80,27 @@ export function useConfirm() {
         confirmState.onCancel = null
     }
 
+    /**
+     * Show confirmation dialog and return Promise
+     * @param {Object} options - Dialog configuration
+     * @returns {Promise<boolean>} - True if confirmed, false if cancelled
+     */
+    const require = (options) => {
+        return new Promise((resolve) => {
+            show({
+                ...options,
+                onConfirm: () => resolve(true),
+                onCancel: () => resolve(false),
+            })
+        })
+    }
+
     return {
         confirmState,
         show,
         confirm,
         cancel,
         close,
+        require,
     }
 }

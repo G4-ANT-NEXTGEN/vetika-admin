@@ -1,15 +1,18 @@
 import { createRouter, createWebHistory } from "vue-router";
-import DashboardView from "@/views/DashboardView.vue";
 import DashboardLayout from "@/layout/DashboardLayout.vue";
 import LoginView from "@/views/LoginView.vue";
-import NotFoundView from "@/views/NotFoundView.vue";
-import SkillView from "@/views/skill/SkillView.vue";
-import SchoolView from "@/views/school/SchoolView.vue";
-import DegreeView from "@/views/degree/DegreeView.vue";
-import SubjectView from "@/views/subject/SubjectView.vue";
-import CategoryView from "@/views/category/CategoryView.vue";
 import { useAuthStore } from "@/stores/auth.js";
-import ProfileView from "@/views/profile/ProfileView.vue";
+
+// Lazy-loaded views
+const DashboardView = () => import("@/views/DashboardView.vue");
+const AnalyticsView = () => import("@/views/AnalyticsView.vue");
+const SkillView = () => import("@/views/skill/SkillView.vue");
+const SchoolView = () => import("@/views/school/SchoolView.vue");
+const DegreeView = () => import("@/views/degree/DegreeView.vue");
+const SubjectView = () => import("@/views/subject/SubjectView.vue");
+const CategoryView = () => import("@/views/category/CategoryView.vue");
+const ProfileView = () => import("@/views/profile/ProfileView.vue");
+const NotFoundView = () => import("@/views/NotFoundView.vue");
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -24,6 +27,14 @@ const router = createRouter({
           component: DashboardView,
           meta: {
             title: "Dashboard",
+          },
+        },
+        {
+          path: "analytics",
+          name: "analytics.index",
+          component: AnalyticsView,
+          meta: {
+            title: "Analytics",
           },
         },
         {
