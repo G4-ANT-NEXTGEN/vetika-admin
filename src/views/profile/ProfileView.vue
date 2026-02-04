@@ -586,10 +586,6 @@ const formatCompactDate = (dateStr) => {
   })
 }
 
-const profileBio = computed(() => {
-  return profileStore.user?.bio || 'Administrator with expertise in managing educational platforms and content systems.'
-})
-
 const profileFields = () => ([
   { key: 'full_name', label: 'Full name', value: profileStore.user?.full_name },
   { key: 'email', label: 'Email', value: profileStore.user?.email },
@@ -599,7 +595,6 @@ const profileFields = () => ([
   { key: 'current_city', label: 'Current city', value: profileStore.user?.current_city },
   { key: 'home_town', label: 'Home town', value: profileStore.user?.home_town },
   { key: 'portfolio_link', label: 'Portfolio', value: profileStore.user?.portfolio_link },
-  { key: 'bio', label: 'Bio', value: profileStore.user?.bio },
   { key: 'avatar', label: 'Avatar', value: profileStore.user?.avatar },
 ])
 
@@ -1091,10 +1086,6 @@ const recentUpdates = computed(() => {
   font-weight: 500;
 }
 
-.bio-text {
-  min-height: 80px;
-  line-height: 1.6;
-}
 
 /* Sidebar */
 .sidebar-info-card {
