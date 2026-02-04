@@ -38,7 +38,8 @@
             </div>
             <div class="status-indicator active"></div>
 
-            <button v-if="profileStore.user?.avatar" class="remove-avatar-btn" @click.stop="removeAvatar" title="Remove Photo">
+            <button v-if="profileStore.user?.avatar" class="remove-avatar-btn" @click.stop="removeAvatar"
+              title="Remove Photo">
               <i class="bi bi-x"></i>
             </button>
             <input type="file" ref="fileInput" @change="handleFileUpload" style="display: none" accept="image/*" />
@@ -66,12 +67,8 @@
     </BaseCard>
 
     <!-- Edit Personal Info Modal -->
-    <BaseModal
-      :show="showEditModal"
-      title="Edit Personal Information"
-      subtitle="Update your basic account details"
-      @close="showEditModal = false"
-    >
+    <BaseModal :show="showEditModal" title="Edit Personal Information" subtitle="Update your basic account details"
+      @close="showEditModal = false">
       <template #header-icon>
         <div class="header-icon-box">
           <i class="bi bi-person-gear"></i>
@@ -79,80 +76,33 @@
       </template>
 
       <div class="edit-grid">
-        <BaseInput
-          v-model="personalForm.full_name"
-          label="Full Name"
-          type="text"
-          placeholder="Enter full name"
-          :error="personalFormErrors.full_name"
-          @blur="validatePersonalField('full_name')"
-        />
+        <BaseInput v-model="personalForm.full_name" label="Full Name" type="text" placeholder="Enter full name"
+          :error="personalFormErrors.full_name" @blur="validatePersonalField('full_name')" />
 
-        <BaseInput
-          v-model="personalForm.email"
-          label="Email Address"
-          type="email"
-          placeholder="Enter email"
-          :error="personalFormErrors.email"
-          @blur="validatePersonalField('email')"
-        />
+        <BaseInput v-model="personalForm.email" label="Email Address" type="email" placeholder="Enter email"
+          :error="personalFormErrors.email" @blur="validatePersonalField('email')" />
 
-        <BaseInput
-          v-model="personalForm.phone"
-          label="Phone Number"
-          type="text"
-          placeholder="Enter phone number"
-          :error="personalFormErrors.phone"
-          @blur="validatePersonalField('phone')"
-        />
+        <BaseInput v-model="personalForm.phone" label="Phone Number" type="text" placeholder="Enter phone number"
+          :error="personalFormErrors.phone" @blur="validatePersonalField('phone')" />
 
-        <BaseInput
-          v-model="personalForm.dob"
-          label="Date of Birth"
-          type="date"
-          :error="personalFormErrors.dob"
-          @blur="validatePersonalField('dob')"
-        />
+        <BaseInput v-model="personalForm.dob" label="Date of Birth" type="date" :error="personalFormErrors.dob"
+          @blur="validatePersonalField('dob')" />
 
-        <BaseSelect
-          v-model="personalForm.gender"
-          label="Gender"
-          :options="[
-            { value: 0, label: 'Female' },
-            { value: 1, label: 'Male' },
-            { value: 2, label: 'Other' }
-          ]"
-          :error="personalFormErrors.gender"
-          @blur="validatePersonalField('gender')"
-        />
+        <BaseSelect v-model="personalForm.gender" label="Gender" :options="[
+          { value: 0, label: 'Female' },
+          { value: 1, label: 'Male' },
+          { value: 2, label: 'Other' }
+        ]" :error="personalFormErrors.gender" @blur="validatePersonalField('gender')" />
 
-        <BaseInput
-          v-model="personalForm.current_city"
-          label="Current City"
-          type="text"
-          placeholder="Enter city"
-          :error="personalFormErrors.current_city"
-          @blur="validatePersonalField('current_city')"
-        />
+        <BaseInput v-model="personalForm.current_city" label="Current City" type="text" placeholder="Enter city"
+          :error="personalFormErrors.current_city" @blur="validatePersonalField('current_city')" />
 
-        <BaseInput
-          v-model="personalForm.home_town"
-          label="Home Town"
-          type="text"
-          placeholder="Enter home town"
-          :error="personalFormErrors.home_town"
-          @blur="validatePersonalField('home_town')"
-        />
+        <BaseInput v-model="personalForm.home_town" label="Home Town" type="text" placeholder="Enter home town"
+          :error="personalFormErrors.home_town" @blur="validatePersonalField('home_town')" />
 
-        <BaseInput
-          v-model="personalForm.portfolio_link"
-          label="Portfolio Link"
-          type="url"
-          placeholder="https://..."
-          :error="personalFormErrors.portfolio_link"
-          @blur="validatePersonalField('portfolio_link')"
-          class="full-width-input"
-        />
+        <BaseInput v-model="personalForm.portfolio_link" label="Portfolio Link" type="url" placeholder="https://..."
+          :error="personalFormErrors.portfolio_link" @blur="validatePersonalField('portfolio_link')"
+          class="full-width-input" />
       </div>
 
       <template #footer>
@@ -164,68 +114,13 @@
       </template>
     </BaseModal>
 
-    <div class="profile-stats-grid">
-      <template v-if="profileStore.isLoading">
-        <div v-for="i in 4" :key="i" class="stat-mini-card">
-          <BaseSkeleton width="48px" height="48px" borderRadius="14px" />
-          <div class="stat-info">
-            <BaseSkeleton width="60px" height="24px" class="mb-1" />
-            <BaseSkeleton width="80px" height="14px" />
-          </div>
-        </div>
-      </template>
-      <template v-else>
-        <div class="stat-mini-card">
-          <div class="stat-icon-wrap blue">
-            <i class="bi bi-lightning-charge-fill"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">342</span>
-            <span class="stat-label">Items Created</span>
-          </div>
-        </div>
-        <div class="stat-mini-card">
-          <div class="stat-icon-wrap green">
-            <i class="bi bi-pencil-fill"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">1,248</span>
-            <span class="stat-label">Total Edits</span>
-          </div>
-        </div>
-        <div class="stat-mini-card">
-          <div class="stat-icon-wrap purple">
-            <i class="bi bi-calendar-event-fill"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">127</span>
-            <span class="stat-label">Days Active</span>
-          </div>
-        </div>
-        <div class="stat-mini-card">
-          <div class="stat-icon-wrap orange">
-            <i class="bi bi-shield-lock-fill"></i>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">Admin</span>
-            <span class="stat-label">Access Level</span>
-          </div>
-        </div>
-      </template>
-    </div>
-
     <!-- Main Content with Tabs -->
     <div class="profile-main-layout">
       <div class="main-column">
         <!-- Tabs Navigation -->
         <div class="profile-tabs">
-          <button
-            v-for="tab in tabs"
-            :key="tab.id"
-            class="tab-btn"
-            :class="{ active: activeTab === tab.id }"
-            @click="activeTab = tab.id"
-          >
+          <button v-for="tab in tabs" :key="tab.id" class="tab-btn" :class="{ active: activeTab === tab.id }"
+            @click="activeTab = tab.id">
             {{ tab.label }}
           </button>
         </div>
@@ -284,16 +179,11 @@
                 <div class="form-group full-width">
                   <label><i class="bi bi-link-45deg"></i> Portfolio</label>
                   <div class="static-input">
-                    <a v-if="profileStore.user?.portfolio_link" :href="profileStore.user.portfolio_link" target="_blank" class="text-link">
+                    <a v-if="profileStore.user?.portfolio_link" :href="profileStore.user.portfolio_link" target="_blank"
+                      class="text-link">
                       {{ profileStore.user.portfolio_link }}
                     </a>
                     <span v-else>-</span>
-                  </div>
-                </div>
-                <div class="form-group full-width">
-                  <label>Bio</label>
-                  <div class="static-input bio-text">
-                    {{ profileStore.user?.bio || 'Administrator with expertise in managing educational platforms and content systems.' }}
                   </div>
                 </div>
               </div>
@@ -349,49 +239,22 @@
 
             <form class="security-form" @submit.prevent="updatePassword">
               <!-- Hidden username field for accessibility and password managers -->
-              <input
-                type="email"
-                :value="profileStore.user?.email"
-                autocomplete="username"
-                name="username"
-                style="display: none;"
-                readonly
-              >
-              <BaseInput
-                v-model="passwordForm.old_pass"
-                label="Current Password"
-                type="password"
-                placeholder="Enter current password"
-                :error="passwordFormErrors.old_pass"
-                @blur="validatePasswordField('old_pass')"
-                autocomplete="current-password"
-                name="current-password"
-                class="mb-4"
-              />
+              <input type="email" :value="profileStore.user?.email" autocomplete="username" name="username"
+                style="display: none;" readonly>
+              <BaseInput v-model="passwordForm.old_pass" label="Current Password" type="password"
+                placeholder="Enter current password" :error="passwordFormErrors.old_pass"
+                @blur="validatePasswordField('old_pass')" autocomplete="current-password" name="current-password"
+                class="mb-4" />
 
-              <BaseInput
-                v-model="passwordForm.new_pass"
-                label="New Password"
-                type="password"
-                placeholder="Enter new password"
-                :error="passwordFormErrors.new_pass"
-                @blur="validatePasswordField('new_pass')"
-                autocomplete="new-password"
-                name="new-password"
-                class="mb-4"
-              />
+              <BaseInput v-model="passwordForm.new_pass" label="New Password" type="password"
+                placeholder="Enter new password" :error="passwordFormErrors.new_pass"
+                @blur="validatePasswordField('new_pass')" autocomplete="new-password" name="new-password"
+                class="mb-4" />
 
-              <BaseInput
-                v-model="passwordForm.new_pass_confirmation"
-                label="Confirm New Password"
-                type="password"
-                placeholder="Confirm new password"
-                :error="passwordFormErrors.new_pass_confirmation"
-                @blur="validatePasswordField('new_pass_confirmation')"
-                autocomplete="new-password"
-                name="confirm-password"
-                class="mb-4"
-              />
+              <BaseInput v-model="passwordForm.new_pass_confirmation" label="Confirm New Password" type="password"
+                placeholder="Confirm new password" :error="passwordFormErrors.new_pass_confirmation"
+                @blur="validatePasswordField('new_pass_confirmation')" autocomplete="new-password"
+                name="confirm-password" class="mb-4" />
 
               <button type="submit" class="modal-btn confirm btn-update" :disabled="profileStore.isProcessing">
                 <span v-if="profileStore.isProcessing" class="spinner-border spinner-border-sm me-2"></span>
@@ -400,202 +263,120 @@
             </form>
           </BaseCard>
 
-          <BaseCard class="info-section mt-4">
-            <div class="section-header">
-              <div class="icon-box">
-                <i class="bi bi-shield-lock"></i>
-              </div>
-              <div class="section-title">
-                <h3>Two-Factor Authentication</h3>
-                <p>Add an extra layer of security</p>
-              </div>
-            </div>
-
-            <div class="settings-row">
-              <div class="row-info">
-                <span class="row-title">Enable 2FA</span>
-                <p class="row-desc">Secure your account with two-factor authentication</p>
-              </div>
-              <button class="action-btn-sm">Enable</button>
-            </div>
-          </BaseCard>
-
-          <BaseCard class="info-section mt-4">
-            <div class="section-header">
-              <div class="icon-box">
-                <i class="bi bi-activity"></i>
-              </div>
-              <div class="section-title">
-                <h3>Active Sessions</h3>
-                <p>Manage your active sessions</p>
-              </div>
-            </div>
-
-            <div class="sessions-list">
-              <div class="session-item">
-                <div class="session-info">
-                  <div class="session-name">Chrome on macOS <span class="current-badge">Current</span></div>
-                  <span class="session-loc">San Francisco, CA</span>
-                </div>
-              </div>
-              <div class="session-item">
-                <div class="session-info">
-                  <div class="session-name">Safari on iPhone</div>
-                  <span class="session-loc">San Francisco, CA</span>
-                </div>
-                <button class="revoke-btn">Revoke</button>
-              </div>
-            </div>
-          </BaseCard>
         </div>
 
-        <!-- Tab Content: Preferences -->
-        <div v-if="activeTab === 'preferences'" class="tab-pane fade-in">
-          <BaseCard class="info-section">
-            <div class="section-header">
-              <div class="icon-box">
-                <i class="bi bi-bell-fill"></i>
-              </div>
-              <div class="section-title">
-                <h3>Notifications</h3>
-                <p>Manage notification preferences</p>
-              </div>
-            </div>
-
-            <div class="settings-stack">
-              <div class="settings-row">
-                <div class="row-info">
-                  <span class="row-title">Email notifications</span>
-                  <p class="row-desc">Receive email updates about your account</p>
-                </div>
-                <label class="custom-toggle">
-                  <input type="checkbox" checked>
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="settings-row">
-                <div class="row-info">
-                  <span class="row-title">Push notifications</span>
-                  <p class="row-desc">Receive push notifications on your devices</p>
-                </div>
-                <label class="custom-toggle">
-                  <input type="checkbox">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="settings-row">
-                <div class="row-info">
-                  <span class="row-title">SMS notifications</span>
-                  <p class="row-desc">Receive text messages for important updates</p>
-                </div>
-                <label class="custom-toggle">
-                  <input type="checkbox">
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-            </div>
-          </BaseCard>
-
-          <BaseCard class="info-section mt-4">
-            <div class="section-header">
-              <div class="icon-box">
-                <i class="bi bi-gear-wide-connected"></i>
-              </div>
-              <div class="section-title">
-                <h3>Display Preferences</h3>
-                <p>Customize your display settings</p>
-              </div>
-            </div>
-
-            <div class="preferences-form">
-              <div class="mb-4">
-                <BaseSelect
-                  label="Language"
-                  :options="['English (US)', 'Spanish']"
-                  modelValue="English (US)"
-                />
-              </div>
-              <div class="mb-4">
-                <BaseSelect
-                  label="Timezone"
-                  :options="['Pacific Time (PT)', 'UTC +0']"
-                  modelValue="Pacific Time (PT)"
-                />
-              </div>
-              <div class="mb-4">
-                <BaseSelect
-                  label="Date Format"
-                  :options="['MM/DD/YYYY', 'DD/MM/YYYY']"
-                  modelValue="MM/DD/YYYY"
-                />
-              </div>
-            </div>
-          </BaseCard>
-        </div>
       </div>
 
-      <!-- Sidebar Column -->
-      <div class="sidebar-column">
+      <aside class="side-column">
         <BaseCard class="sidebar-info-card">
           <h4 class="sidebar-title">Account Status</h4>
           <div class="status-list">
             <div class="status-item">
-              <div class="status-icon green"><i class="bi bi-check-circle-fill"></i></div>
-              <div class="status-text">
-                <span class="lbl">Status</span>
-                <span class="val">Active</span>
+              <div class="status-icon green">
+                <i class="bi bi-check-circle"></i>
               </div>
-            </div>
-            <div class="status-item">
-              <div class="status-icon blue"><i class="bi bi-envelope-check-fill"></i></div>
               <div class="status-text">
                 <span class="lbl">Verified</span>
-                <span class="val">Email verified</span>
+                <span class="val">{{ profileStore.user?.email_verified_at ? 'Yes' : 'No' }}</span>
               </div>
             </div>
             <div class="status-item">
-              <div class="status-icon purple"><i class="bi bi-clock-fill"></i></div>
+              <div class="status-icon blue">
+                <i class="bi bi-shield-check"></i>
+              </div>
+              <div class="status-text">
+                <span class="lbl">Role</span>
+                <span class="val">{{ profileStore.user?.roles?.[0]?.name || 'Administrator' }}</span>
+              </div>
+            </div>
+            <div class="status-item">
+              <div class="status-icon purple">
+                <i class="bi bi-calendar-event"></i>
+              </div>
+              <div class="status-text">
+                <span class="lbl">Created</span>
+                <span class="val">{{ formatDate(profileStore.user?.created_at) }}</span>
+              </div>
+            </div>
+            <div class="status-item">
+              <div class="status-icon blue">
+                <i class="bi bi-box-arrow-in-right"></i>
+              </div>
               <div class="status-text">
                 <span class="lbl">Last Login</span>
-                <span class="val">2 min ago</span>
+                <span class="val">{{ formatCompactDate(profileStore.user?.last_login_at) }}</span>
               </div>
             </div>
           </div>
         </BaseCard>
 
-        <BaseCard class="sidebar-info-card mt-4">
-          <h4 class="sidebar-title">Recent Activity</h4>
+        <BaseCard class="sidebar-info-card">
+          <h4 class="sidebar-title">Profile Completeness</h4>
+          <div class="completion-meter">
+            <div class="completion-bar" :style="{ width: profileCompletion + '%' }"></div>
+          </div>
+          <div class="completion-meta">{{ profileCompletion }}% complete</div>
+          <div class="chip-list">
+            <span v-for="field in missingFields" :key="field" class="chip">Missing {{ field }}</span>
+            <span v-if="!missingFields.length" class="chip success">All set</span>
+          </div>
+        </BaseCard>
+
+        <BaseCard class="sidebar-info-card">
+          <h4 class="sidebar-title">Recent Updates</h4>
           <div class="activity-mini-list">
-            <div class="activity-mini-item">
-              <div class="act-icon blue"><i class="bi bi-pencil-square"></i></div>
+            <div v-for="(item, index) in recentUpdates" :key="index" class="activity-mini-item">
+              <div class="act-icon blue">
+                <i class="bi bi-arrow-repeat"></i>
+              </div>
               <div class="act-content">
-                <span class="act-title">Updated Skills</span>
-                <span class="act-time">2 hours ago</span>
+                <span class="act-title">{{ item.title }}</span>
+                <span class="act-time">{{ item.time }}</span>
               </div>
             </div>
-            <div class="activity-mini-item">
-              <div class="act-icon green"><i class="bi bi-plus-circle-fill"></i></div>
-              <div class="act-content">
-                <span class="act-title">Added new School</span>
-                <span class="act-time">1 day ago</span>
+            <div v-if="!recentUpdates.length" class="empty-state">No recent updates</div>
+          </div>
+        </BaseCard>
+
+        <BaseCard class="sidebar-info-card">
+          <h4 class="sidebar-title">Connected Data</h4>
+          <div class="status-list">
+            <div class="status-item">
+              <div class="status-icon blue">
+                <i class="bi bi-lightbulb"></i>
+              </div>
+              <div class="status-text">
+                <span class="lbl">Skills Linked</span>
+                <span class="val">{{ profileStore.user?.skills_count ?? 0 }}</span>
               </div>
             </div>
-            <div class="activity-mini-item">
-              <div class="act-icon purple"><i class="bi bi-folder-fill"></i></div>
-              <div class="act-content">
-                <span class="act-title">Modified Category</span>
-                <span class="act-time">3 days ago</span>
+            <div class="status-item">
+              <div class="status-icon green">
+                <i class="bi bi-building"></i>
+              </div>
+              <div class="status-text">
+                <span class="lbl">Schools Linked</span>
+                <span class="val">{{ profileStore.user?.schools_count ?? 0 }}</span>
+              </div>
+            </div>
+            <div class="status-item">
+              <div class="status-icon purple">
+                <i class="bi bi-journal"></i>
+              </div>
+              <div class="status-text">
+                <span class="lbl">Subjects Linked</span>
+                <span class="val">{{ profileStore.user?.subjects_count ?? 0 }}</span>
               </div>
             </div>
           </div>
         </BaseCard>
-      </div>
+      </aside>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, watch } from 'vue'
+import { ref, onMounted, reactive, watch, computed } from 'vue'
 import { useProfileStore } from '@/stores/profile'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
@@ -677,8 +458,7 @@ const breadcrumbs = [
 
 const tabs = [
   { id: 'overview', label: 'Overview' },
-  { id: 'security', label: 'Security' },
-  { id: 'preferences', label: 'Preferences' }
+  { id: 'security', label: 'Security' }
 ]
 
 onMounted(async () => {
@@ -795,6 +575,60 @@ const formatDate = (dateStr) => {
     year: 'numeric'
   })
 }
+
+const formatCompactDate = (dateStr) => {
+  if (!dateStr) return 'Not available'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
+}
+
+const profileBio = computed(() => {
+  return profileStore.user?.bio || 'Administrator with expertise in managing educational platforms and content systems.'
+})
+
+const profileFields = () => ([
+  { key: 'full_name', label: 'Full name', value: profileStore.user?.full_name },
+  { key: 'email', label: 'Email', value: profileStore.user?.email },
+  { key: 'phone', label: 'Phone', value: profileStore.user?.phone },
+  { key: 'dob', label: 'Date of birth', value: profileStore.user?.dob },
+  { key: 'gender', label: 'Gender', value: profileStore.user?.gender },
+  { key: 'current_city', label: 'Current city', value: profileStore.user?.current_city },
+  { key: 'home_town', label: 'Home town', value: profileStore.user?.home_town },
+  { key: 'portfolio_link', label: 'Portfolio', value: profileStore.user?.portfolio_link },
+  { key: 'bio', label: 'Bio', value: profileStore.user?.bio },
+  { key: 'avatar', label: 'Avatar', value: profileStore.user?.avatar },
+])
+
+const profileCompletion = computed(() => {
+  const fields = profileFields()
+  const filled = fields.filter((f) => f.value).length
+  return fields.length ? Math.round((filled / fields.length) * 100) : 0
+})
+
+const missingFields = computed(() => {
+  return profileFields()
+    .filter((f) => !f.value)
+    .map((f) => f.label)
+    .slice(0, 4)
+})
+
+const recentUpdates = computed(() => {
+  const items = []
+  if (profileStore.user?.updated_at) {
+    items.push({ title: 'Profile updated', time: formatCompactDate(profileStore.user.updated_at) })
+  }
+  if (profileStore.user?.avatar) {
+    items.push({ title: 'Avatar updated', time: 'Recently' })
+  }
+  if (profileStore.user?.portfolio_link) {
+    items.push({ title: 'Portfolio linked', time: 'Recently' })
+  }
+  return items.slice(0, 3)
+})
 </script>
 
 <style scoped>
@@ -863,7 +697,7 @@ const formatDate = (dateStr) => {
   font-weight: 700;
   color: #fff;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
   cursor: pointer;
   position: relative;
 }
@@ -1027,10 +861,25 @@ const formatDate = (dateStr) => {
   font-size: 20px;
 }
 
-.stat-icon-wrap.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.stat-icon-wrap.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.stat-icon-wrap.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
-.stat-icon-wrap.orange { background: rgba(249, 115, 22, 0.1); color: #f97316; }
+.stat-icon-wrap.blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.stat-icon-wrap.green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.stat-icon-wrap.purple {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
+
+.stat-icon-wrap.orange {
+  background: rgba(249, 115, 22, 0.1);
+  color: #f97316;
+}
 
 .stat-info {
   display: flex;
@@ -1054,6 +903,12 @@ const formatDate = (dateStr) => {
   grid-template-columns: 1fr 320px;
   gap: 24px;
   align-items: flex-start;
+}
+
+.side-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .profile-tabs {
@@ -1163,7 +1018,8 @@ const formatDate = (dateStr) => {
   opacity: 0.8;
 }
 
-.icon-box, .header-icon-box {
+.icon-box,
+.header-icon-box {
   width: 42px;
   height: 42px;
   background: var(--nav-bg);
@@ -1252,6 +1108,56 @@ const formatDate = (dateStr) => {
   color: var(--color-text);
 }
 
+.completion-meter {
+  width: 100%;
+  height: 8px;
+  background: var(--nav-bg);
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.completion-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #3b82f6);
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+.completion-meta {
+  font-size: 12px;
+  color: var(--color-muted);
+  margin-bottom: 12px;
+}
+
+.chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background: var(--nav-bg);
+  border: 1px solid var(--color-border);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--color-text);
+}
+
+.chip.success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .status-list {
   display: flex;
   flex-direction: column;
@@ -1274,9 +1180,20 @@ const formatDate = (dateStr) => {
   font-size: 16px;
 }
 
-.status-icon.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.status-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.status-icon.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.status-icon.green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.status-icon.blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.status-icon.purple {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
 
 .status-text {
   display: flex;
@@ -1318,9 +1235,20 @@ const formatDate = (dateStr) => {
   flex-shrink: 0;
 }
 
-.act-icon.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.act-icon.green { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-.act-icon.purple { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.act-icon.blue {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.act-icon.green {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22c55e;
+}
+
+.act-icon.purple {
+  background: rgba(168, 85, 247, 0.1);
+  color: #a855f7;
+}
 
 .act-content {
   display: flex;
@@ -1339,7 +1267,8 @@ const formatDate = (dateStr) => {
 }
 
 /* Security & Preferences Tabs Styling */
-.security-form, .preferences-form {
+.security-form,
+.preferences-form {
   max-width: 600px;
 }
 
@@ -1390,7 +1319,8 @@ const formatDate = (dateStr) => {
   cursor: pointer;
 }
 
-.sessions-list, .settings-stack {
+.sessions-list,
+.settings-stack {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -1476,30 +1406,41 @@ const formatDate = (dateStr) => {
   border-radius: 50%;
 }
 
-.custom-toggle input:checked + .toggle-slider {
+.custom-toggle input:checked+.toggle-slider {
   background-color: var(--color-text);
 }
 
-[data-theme='light'] .custom-toggle input:checked + .toggle-slider {
+[data-theme='light'] .custom-toggle input:checked+.toggle-slider {
   background-color: var(--color-text);
 }
 
-.custom-toggle input:checked + .toggle-slider:before {
+.custom-toggle input:checked+.toggle-slider:before {
   transform: translateX(20px);
   background-color: var(--nav-surface);
 }
 
-.mb-4 { margin-bottom: 20px; }
+.mb-4 {
+  margin-bottom: 20px;
+}
 
-.mt-4 { margin-top: 24px; }
+.mt-4 {
+  margin-top: 24px;
+}
 
 .fade-in {
   animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1200px) {
@@ -1511,6 +1452,10 @@ const formatDate = (dateStr) => {
 @media (max-width: 992px) {
   .profile-main-layout {
     grid-template-columns: 1fr;
+  }
+
+  .side-column {
+    order: 2;
   }
 }
 
