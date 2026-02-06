@@ -85,14 +85,23 @@ const close = () => emit('close')
   border: 1px solid var(--color-border);
 }
 
-.modal-container.lg { max-width: 800px; }
-.modal-container.sm { max-width: 400px; }
+.modal-container.lg {
+  max-width: 800px;
+}
+
+.modal-container.xl {
+  max-width: 1100px;
+}
+
+.modal-container.sm {
+  max-width: 400px;
+}
 
 /* Pattern Header (Topographic Look) */
 .pattern-header {
   height: 180px;
   background-color: var(--nav-surface);
-  background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url("/images/modal_header_image/modal_image.jpg");
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url("/images/modal_header_image/modal_image.jpg");
   background-size: cover;
   background-position: center;
   padding: 30px;
@@ -187,10 +196,13 @@ const close = () => emit('close')
 }
 
 /* Transitions */
-.modal-fade-enter-active, .modal-fade-leave-active {
+.modal-fade-enter-active,
+.modal-fade-leave-active {
   transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.modal-fade-enter-from, .modal-fade-leave-to {
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
   opacity: 0;
 }
 </style>

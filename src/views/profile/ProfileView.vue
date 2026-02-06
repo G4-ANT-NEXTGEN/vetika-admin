@@ -52,10 +52,6 @@
                 <i class="bi bi-calendar-check"></i>
                 Joined {{ formatDate(profileStore.user?.created_at) }}
               </div>
-              <div class="meta-item status-active">
-                <i class="bi bi-lightning-fill"></i>
-                Active 2 minutes ago
-              </div>
             </div>
           </div>
         </div>
@@ -271,15 +267,6 @@
         <BaseCard class="sidebar-info-card">
           <h4 class="sidebar-title">Account Status</h4>
           <div class="status-list">
-            <div class="status-item">
-              <div class="status-icon green">
-                <i class="bi bi-check-circle"></i>
-              </div>
-              <div class="status-text">
-                <span class="lbl">Verified</span>
-                <span class="val">{{ profileStore.user?.email_verified_at ? 'Yes' : 'No' }}</span>
-              </div>
-            </div>
             <div class="status-item">
               <div class="status-icon blue">
                 <i class="bi bi-shield-check"></i>

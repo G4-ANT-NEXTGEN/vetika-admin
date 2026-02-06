@@ -111,7 +111,7 @@
     </div>
 
     <!-- View User Modal -->
-    <BaseModal :show="showViewModal" title="User Profile" subtitle="Complete user information"
+    <BaseModal :show="showViewModal" title="User Profile" subtitle="Complete user information" size="xl"
       @close="showViewModal = false">
       <template #header-icon>
         <div class="header-icon-box">
@@ -120,14 +120,24 @@
       </template>
 
       <div v-if="selectedUser" class="user-details">
-        <!-- Cover Image -->
-        <div v-if="getCoverUrl(selectedUser.cover)" class="detail-cover">
-          <img :src="getCoverUrl(selectedUser.cover)" :alt="selectedUser.full_name" />
-        </div>
+        <div class="profile-column">
+          <div class="detail-header">
+            <!-- Avatar -->
+            <div class="detail-avatar">
+              <img :src="getAvatarUrl(selectedUser.avatar)" :alt="selectedUser.full_name" @error="handleImageError" />
+            </div>
 
-        <!-- Avatar -->
-        <div class="detail-avatar">
-          <img :src="getAvatarUrl(selectedUser.avatar)" :alt="selectedUser.full_name" @error="handleImageError" />
+            <div class="detail-header-body">
+              <!-- Cover Image -->
+              <div v-if="getCoverUrl(selectedUser.cover)" class="detail-cover">
+                <img :src="getCoverUrl(selectedUser.cover)" :alt="selectedUser.full_name" />
+              </div>
+              <div class="detail-identity">
+                <h3>{{ selectedUser.full_name || 'N/A' }}</h3>
+                <p>#{{ selectedUser.id }} · {{ selectedUser.email || 'N/A' }}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Info Grid -->
@@ -631,14 +641,33 @@ const handleImageError = (e) => {
 
 
 .user-details {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.profile-column {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+}
+
+.detail-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-header-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .detail-cover {
   width: 100%;
-  height: 160px;
+  height: 130px;
   border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(135deg, #4a4a4a, #5a5a5a);
@@ -652,18 +681,39 @@ const handleImageError = (e) => {
 
 .detail-avatar {
   display: flex;
+  align-items: flex-start;
   justify-content: center;
-  margin-top: -40px;
-  position: relative;
-  z-index: 1;
 }
 
 .detail-avatar img {
-  width: 100px;
-  height: 100px;
+  width: 96px;
+  height: 96px;
   border-radius: 50%;
   border: 4px solid var(--nav-surface);
   object-fit: cover;
+}
+
+.detail-identity {
+  background: var(--nav-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.detail-identity h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.detail-identity p {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .details-grid {
@@ -771,6 +821,14 @@ const handleImageError = (e) => {
 
   .detail-card.full {
     grid-column: span 1;
+  }
+
+  .user-details {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-identity p {
+    white-space: normal;
   }
 }
 </style>

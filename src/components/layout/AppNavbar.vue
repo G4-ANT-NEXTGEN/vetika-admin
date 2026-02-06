@@ -17,36 +17,6 @@
           <i class="bi bi-moon-fill" v-else></i>
         </button>
 
-        <div class="notification-wrapper">
-          <button class="gray-circle-btn dropdown-btn" title="Notifications" type="button"
-            @click="isNotificationOpen = !isNotificationOpen">
-            <span class="sr-only">Notifications</span>
-            <span class="notification-dot"></span>
-            <i class="bi bi-bell" aria-hidden="true"></i>
-          </button>
-          <ul class="users-item-dropdown notification-dropdown dropdown" :class="{ 'active': isNotificationOpen }">
-            <li>
-              <button class="notification-item">
-                <div class="notification-dropdown-icon info">
-                  <i class="bi bi-check-circle-fill"></i>
-                </div>
-                <div class="notification-dropdown-text">
-                  <span class="notification-dropdown__title">System just updated</span>
-                  <span class="notification-dropdown__subtitle">The system has been successfully upgraded.</span>
-                </div>
-              </button>
-            </li>
-            <li>
-              <RouterLink to="/notifications" class="link-to-page">Go to Notifications page</RouterLink>
-            </li>
-          </ul>
-        </div>
-
-        <button class="gray-circle-btn settings-btn" type="button" title="Settings">
-          <span class="sr-only">Settings</span>
-          <i class="bi bi-gear" aria-hidden="true"></i>
-        </button>
-
         <RouterLink to="/profile" class="nav-user-inline" title="Go to profile">
           <span class="nav-user-img">
             <picture>
