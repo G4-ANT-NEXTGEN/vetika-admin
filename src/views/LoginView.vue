@@ -1,5 +1,7 @@
 <template>
-  <div class="login-container">
+  <div class="login-container login-with-bg">
+    <BackgroundBeams v-if="themeStore.isDarkMode" class="login-beams" />
+    <ShootingStars v-if="themeStore.isDarkMode" class="login-stars" />
     <div class="login-card">
       <div class="login-left">
         <div class="login-left-content">
@@ -30,31 +32,14 @@
 
           <form @submit.prevent="handleLogin" class="login-form" novalidate>
             <div class="form-group">
-              <BaseInput
-                v-model="email"
-                id="email"
-                label="Email"
-                type="email"
-                placeholder="Input your email"
-                icon="bi-envelope"
-                :error="errors.email"
-                @blur="validate('email')"
-                autocomplete="email"
-              />
+              <BaseInput v-model="email" id="email" label="Email" type="email" placeholder="Input your email"
+                icon="bi-envelope" :error="errors.email" @blur="validate('email')" autocomplete="email" />
             </div>
 
             <div class="form-group">
-              <BaseInput
-                v-model="password"
-                id="password"
-                label="Password"
-                type="password"
-                placeholder="Input your password"
-                icon="bi-lock"
-                :error="errors.password"
-                @blur="validate('password')"
-                autocomplete="current-password"
-              />
+              <BaseInput v-model="password" id="password" label="Password" type="password"
+                placeholder="Input your password" icon="bi-lock" :error="errors.password" @blur="validate('password')"
+                autocomplete="current-password" />
             </div>
 
             <button type="submit" class="login-btn" :class="{ 'is-loading': loading }" :disabled="loading">
@@ -74,13 +59,17 @@
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { useThemeStore } from '@/stores/theme';
 import { useToast } from '@/composables/useToast';
 import BaseInput from '@/components/ui/base/BaseInput.vue';
+import BackgroundBeams from '@/components/ui/background/BackgroundBeams.vue';
+import ShootingStars from '@/components/ui/background/ShootingStars.vue';
 import { useFormValidation, validationRules } from '@/composables/useFormValidation';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const { add: addToast } = useToast();
+const themeStore = useThemeStore();
 
 const form = reactive({
   email: '',
@@ -163,6 +152,16 @@ const handleLogin = async () => {
   min-height: 100vh;
   background: var(--color-background);
   padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.login-with-bg :deep(.background-beams-container) {
+  z-index: 0;
+}
+
+.login-with-bg :deep(.stars-container) {
+  z-index: 1;
 }
 
 .login-card {
@@ -175,6 +174,8 @@ const handleLogin = async () => {
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 2;
 }
 
 .login-left {
@@ -313,6 +314,7 @@ const handleLogin = async () => {
 
 .login-btn:hover:not(:disabled) {
   background: #1a1a1a;
+  color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -324,86 +326,84 @@ const handleLogin = async () => {
 .login-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
 
-  .btn-spinner {
-    display: flex;
-    align-items: center;
+.login-btn:disabled .btn-spinner {
+  display: flex;
+  align-items: center;
+}
+
+.login-btn:disabled .spinner-icon {
+  font-size: 18px;
+  animation: spin 0.8s linear infinite;
+}
+
+.login-btn.is-loading .spinner-icon {
+  animation: spin 0.8s linear infinite, pulse 1.6s ease-in-out infinite;
+}
+
+.login-btn.is-loading::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0) 100%);
+  background-size: 200% 100%;
+  animation: progressSlide 1.2s linear infinite;
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.9;
   }
 
-  .spinner-icon {
-    font-size: 18px;
-    animation: spin 0.8s linear infinite;
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
   }
 
-  /* Pulse spinner when loading */
-  .login-btn.is-loading .spinner-icon {
-    animation: spin 0.8s linear infinite, pulse 1.6s ease-in-out infinite;
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes progressSlide {
+  0% {
+    background-position: 200% 0;
   }
 
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 0.9;
-    }
+  100% {
+    background-position: -200% 0;
+  }
+}
 
-    50% {
-      transform: scale(1.15);
-      opacity: 1;
-    }
-
-    100% {
-      transform: scale(1);
-      opacity: 0.9;
-    }
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
   }
 
-  /* Animated progress bar at bottom of button while loading */
-  .login-btn.is-loading::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 3px;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0) 100%);
-    background-size: 200% 100%;
-    animation: progressSlide 1.2s linear infinite;
-  }
-
-  @keyframes progressSlide {
-    0% {
-      background-position: 200% 0;
-    }
-
-    100% {
-      background-position: -200% 0;
-    }
-  }
-
-  @keyframes spin {
-    from {
-      transform: rotate(0deg);
-    }
-
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  .loading-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    backdrop-filter: blur(4px);
+  to {
+    transform: rotate(360deg);
   }
 }
 
