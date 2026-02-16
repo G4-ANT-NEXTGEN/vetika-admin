@@ -102,9 +102,10 @@ const chartData = computed(() => ({
         'rgba(236, 72, 153, 1)',
         'rgba(34, 197, 94, 1)',
       ],
-      barThickness: 22,
-      categoryPercentage: 0.6,
-      barPercentage: 0.7,
+      barThickness: 28,
+      maxBarThickness: 36,
+      categoryPercentage: 0.8,
+      barPercentage: 0.9,
     }
   ]
 }))

@@ -41,6 +41,26 @@ export const useProfileStore = defineStore("profile", () => {
     }
   };
 
+  const uploadCover = async (file) => {
+    isProcessing.value = true;
+    try {
+      const formData = new FormData();
+      formData.append("cover", file);
+      const res = await api.post("/api/profile/cover", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      await fetchProfile();
+      return res.data;
+    } catch (error) {
+      console.error("Failed to upload cover:", error);
+      throw error;
+    } finally {
+      isProcessing.value = false;
+    }
+  };
+
   const removeAvatar = async () => {
     isProcessing.value = true;
     try {
@@ -60,7 +80,7 @@ export const useProfileStore = defineStore("profile", () => {
     try {
       const params = new URLSearchParams();
       Object.keys(payload).forEach(key => {
-        if (payload[key] !== null && payload[key] !== undefined && payload[key] !== '') {
+        if (payload[key] !== null && payload[key] !== undefined) {
           params.append(key, payload[key]);
         }
       });
@@ -123,6 +143,7 @@ export const useProfileStore = defineStore("profile", () => {
     isProcessing,
     fetchProfile,
     uploadAvatar,
+    uploadCover,
     removeAvatar,
     updatePersonalInfo,
     updateProfessionalInfo,

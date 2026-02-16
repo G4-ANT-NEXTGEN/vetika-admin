@@ -65,6 +65,9 @@
         <div class="image-upload-wrapper">
           <div v-if="imagePreview" class="image-preview">
             <img :src="imagePreview" alt="Preview" class="preview-image" />
+            <button type="button" class="replace-image-btn" @click="triggerFileInput">
+              <i class="bi bi-arrow-repeat"></i>
+            </button>
             <button type="button" class="remove-image-btn" @click="removeImage">
               <i class="bi bi-trash"></i>
             </button>
@@ -187,10 +190,12 @@ import BaseModal from '@/components/ui/base/BaseModal.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
 import BaseInput from '@/components/ui/base/BaseInput.vue'
 import { useFormValidation, validationRules } from '@/composables/useFormValidation'
+import { useToast } from '@/composables/useToast'
 
 // --- State ---
 const categoryStore = useCategoryStore()
 const route = useRoute()
+const toast = useToast()
 const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
@@ -209,10 +214,21 @@ const form = reactive({
 
 const imagePreview = ref(null)
 const fileInput = ref(null)
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 const { errors, validateField: validate, validate: validateAll, reset: resetValidation } = useFormValidation(form, {
-  name: [validationRules.required('Category name is required')]
+  name: [
+    validationRules.required('Category name is required'),
+    validationRules.maxLength(255, 'Category name must be under 255 characters')
+  ]
 })
+
+const triggerFileInput = () => {
+  if (fileInput.value) {
+    fileInput.value.click()
+  }
+}
 
 // --- Breadcrumbs ---
 const breadcrumbs = [
@@ -281,6 +297,18 @@ const handleEdit = (item) => {
 const handleImageUpload = (event) => {
   const file = event.target.files?.[0]
   if (file) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Image must be a JPG, PNG, GIF, or WebP file')
+      event.target.value = ''
+      form.image = null
+      return
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error('Image must be 5MB or smaller')
+      event.target.value = ''
+      form.image = null
+      return
+    }
     form.image = file
     const reader = new FileReader()
     reader.onload = (e) => {
@@ -320,19 +348,30 @@ const saveCategory = async () => {
     payload.image = form.image
   }
 
-  if (isEditing.value) {
-    await categoryStore.editCategory(selectedItem.value.id, payload)
-  } else {
-    await categoryStore.createCategory(payload)
+  try {
+    if (isEditing.value) {
+      const res = await categoryStore.editCategory(selectedItem.value.id, payload)
+      toast.success(res?.message || 'Category updated successfully')
+    } else {
+      const res = await categoryStore.createCategory(payload)
+      toast.success(res?.message || 'Category created successfully')
+    }
+    showFormModal.value = false
+    await categoryStore.fetchCategories({ force: true })
+  } catch (err) {
+    toast.error(isEditing.value ? 'Failed to update category' : 'Failed to create category')
   }
-  showFormModal.value = false
-  await categoryStore.fetchCategories({ force: true })
 }
 
 const confirmDelete = async () => {
-  await categoryStore.deleteCategory(selectedItem.value.id)
-  showDeleteModal.value = false
-  await categoryStore.fetchCategories({ force: true })
+  try {
+    const res = await categoryStore.deleteCategory(selectedItem.value.id)
+    toast.success(res?.message || 'Category deleted successfully')
+    showDeleteModal.value = false
+    await categoryStore.fetchCategories({ force: true })
+  } catch (err) {
+    toast.error('Failed to delete category')
+  }
 }
 
 const handleSearch = () => {
@@ -633,6 +672,28 @@ input[type="file"] {
   height: 200px;
   object-fit: cover;
   display: block;
+}
+
+.replace-image-btn {
+  position: absolute;
+  top: 8px;
+  right: 48px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.9);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.replace-image-btn:hover {
+  background: #3b82f6;
 }
 
 .remove-image-btn {

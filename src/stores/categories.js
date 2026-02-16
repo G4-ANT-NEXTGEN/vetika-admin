@@ -73,24 +73,21 @@ export const useCategoryStore = defineStore("category", () => {
       isProcessing.value = true;
       const formData = new FormData();
 
-      // Add image file if present
       if (payload.image instanceof File) {
         formData.append('image', payload.image);
       }
 
-      // Add name field
       if (payload.name) {
         formData.append('name', payload.name);
       }
 
-      // Add any other fields from payload
       Object.keys(payload).forEach(key => {
         if (key !== 'image' && key !== 'name' && payload[key] !== undefined) {
           formData.append(key, payload[key]);
         }
       });
 
-      const res = await api.put(`/api/categories/${id}`, formData, {
+      const res = await api.post(`/api/categories/${id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

@@ -13,6 +13,7 @@ const SubjectView = () => import("@/views/subject/SubjectView.vue");
 const CategoryView = () => import("@/views/category/CategoryView.vue");
 const UserView = () => import("@/views/user/UserView.vue");
 const ProfileView = () => import("@/views/profile/ProfileView.vue");
+const HelpView = () => import("@/views/HelpView.vue");
 const NotFoundView = () => import("@/views/NotFoundView.vue");
 
 const router = createRouter({
@@ -94,6 +95,14 @@ const router = createRouter({
             title: "Profile",
           },
         },
+        {
+          path: "help",
+          name: "help.index",
+          component: HelpView,
+          meta: {
+            title: "Help & Support",
+          },
+        },
       ],
     },
     {
@@ -113,6 +122,10 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const authStore = useAuthStore();
   document.title = to.meta.title ? `${to.meta.title} - My Admin` : "My Admin";
+
+  if (to.name === "login") {
+    return true;
+  }
 
   if (authStore.token && !authStore.user) {
     try {

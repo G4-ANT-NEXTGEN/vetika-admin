@@ -33,7 +33,6 @@
       <BaseCard class="kpi-card">
         <div class="kpi-label">Total Users</div>
         <div class="kpi-value">{{ dashboardStore.userStats.totalUsers }}</div>
-        <div class="kpi-meta">{{ verifiedRate }}% verified</div>
       </BaseCard>
       <BaseCard class="kpi-card">
         <div class="kpi-label">New Users (30d)</div>
@@ -67,10 +66,6 @@
             <span class="pulse-badge">Live</span>
           </div>
           <div class="pulse-metrics">
-            <div class="pulse-item">
-              <span class="label">Verified Users</span>
-              <strong class="value">{{ dashboardStore.userStats.verifiedUsers }}</strong>
-            </div>
             <div class="pulse-item">
               <span class="label">New Users (30d)</span>
               <strong class="value">{{ dashboardStore.userStats.newUsers }}</strong>
@@ -112,10 +107,6 @@
           <div class="metric-row">
             <span>Total Users</span>
             <strong>{{ dashboardStore.userStats.totalUsers }}</strong>
-          </div>
-          <div class="metric-row">
-            <span>Verified Users</span>
-            <strong>{{ dashboardStore.userStats.verifiedUsers }}</strong>
           </div>
           <div class="metric-row">
             <span>New Users (30d)</span>
@@ -299,9 +290,6 @@
               <span class="user-name">{{ user.full_name }}</span>
               <span class="user-email">{{ user.email }}</span>
             </div>
-            <span class="user-status" :class="user.email_verified_at ? 'verified' : 'unverified'">
-              {{ user.email_verified_at ? 'Verified' : 'Unverified' }}
-            </span>
           </div>
           <div v-if="!dashboardStore.newestUsers.length" class="empty-state">No recent users</div>
         </div>
@@ -361,11 +349,6 @@ const totalCount = computed(() => {
   return distributionData.value.reduce((acc, curr) => acc + curr.value, 0) || 14
 })
 
-const verifiedRate = computed(() => {
-  const total = dashboardStore.userStats.totalUsers || 0
-  if (!total) return 0
-  return Math.round((dashboardStore.userStats.verifiedUsers / total) * 100)
-})
 
 const getDateDaysAgo = (days) => {
   const date = new Date()
@@ -930,7 +913,7 @@ const exportHighRes = () => {
 
 .user-row {
   display: grid;
-  grid-template-columns: 36px 1fr auto;
+  grid-template-columns: 36px 1fr;
   gap: 12px;
   align-items: center;
   padding: 10px;
@@ -963,27 +946,6 @@ const exportHighRes = () => {
   color: var(--color-muted);
 }
 
-.user-status {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 8px;
-  border-radius: 999px;
-}
-
-.user-status.verified {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-}
-
-.user-status.pending {
-  background: rgba(234, 179, 8, 0.1);
-  color: #eab308;
-}
-
-.user-status.unverified {
-  background: rgba(148, 163, 184, 0.15);
-  color: #94a3b8;
-}
 
 @media (max-width: 1024px) {
   .analytics-grid {

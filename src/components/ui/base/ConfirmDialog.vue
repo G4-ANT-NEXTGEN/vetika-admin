@@ -1,34 +1,36 @@
 <template>
-    <teleport to="body">
-        <div v-if="isVisible" class="confirm-overlay" @click.self="handleCancel">
-            <div class="confirm-dialog">
-                <div class="confirm-header">
-                    <div class="confirm-icon-wrapper">
-                        <i :class="['bi', dialogIcon, 'confirm-icon']"></i>
-                    </div>
-                </div>
-
-                <div class="confirm-body">
-                    <h5 class="confirm-title">{{ title }}</h5>
-                    <p class="confirm-message">{{ message }}</p>
-
-                    <div v-if="$slots.default" class="confirm-content">
-                        <slot />
-                    </div>
-                </div>
-
-                <div class="confirm-footer">
-                    <button type="button" class="btn btn-outline-secondary" @click="handleCancel">
-                        {{ cancelText }}
-                    </button>
-                    <button type="button" :class="['btn', buttonClass]" :disabled="isLoading" @click="handleConfirm">
-                        <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
-                        {{ confirmText }}
-                    </button>
-                </div>
-            </div>
+  <teleport to="body">
+    <div v-if="isVisible" class="confirm-overlay" @click.self="handleCancel">
+      <div class="confirm-dialog">
+        <div class="confirm-header">
+          <div class="confirm-icon-wrapper">
+            <i :class="['bi', dialogIcon, 'confirm-icon']"></i>
+          </div>
         </div>
-    </teleport>
+
+        <div class="confirm-body">
+          <h5 class="confirm-title">{{ title }}</h5>
+          <p class="confirm-message">{{ message }}</p>
+
+          <div v-if="$slots.default" class="confirm-content">
+            <slot />
+          </div>
+        </div>
+
+        <div class="confirm-footer">
+          <button type="button" class="btn btn-outline-secondary" @click="handleCancel">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+            {{ cancelText }}
+          </button>
+          <button type="button" :class="['btn', buttonClass]" :disabled="isLoading" @click="handleConfirm">
+            <span v-if="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            <i v-else :class="['bi', confirmIcon]" aria-hidden="true"></i>
+            {{ confirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </teleport>
 </template>
 
 <script setup>
@@ -47,204 +49,254 @@ const cancelText = computed(() => confirmState.cancelText)
 const type = computed(() => confirmState.type)
 
 const dialogIcon = computed(() => {
-    const icons = {
-        warning: 'bi-exclamation-triangle-fill',
-        danger: 'bi-exclamation-circle-fill',
-        info: 'bi-info-circle-fill',
-    }
-    return icons[type.value] || icons.warning
+  const icons = {
+    warning: 'bi-exclamation-triangle-fill',
+    danger: 'bi-exclamation-circle-fill',
+    info: 'bi-info-circle-fill',
+  }
+  return icons[type.value] || icons.warning
+})
+
+const confirmIcon = computed(() => {
+  const icons = {
+    warning: 'bi-exclamation-triangle',
+    danger: 'bi-box-arrow-right',
+    info: 'bi-check-circle',
+  }
+  return icons[type.value] || icons.warning
 })
 
 const buttonClass = computed(() => {
-    const classes = {
-        warning: 'btn-warning',
-        danger: 'btn-danger',
-        info: 'btn-info',
-    }
-    return classes[type.value] || classes.warning
+  const classes = {
+    warning: 'btn-warning',
+    danger: 'btn-danger',
+    info: 'btn-info',
+  }
+  return classes[type.value] || classes.warning
 })
 
 const handleConfirm = async () => {
-    isLoading.value = true
-    try {
-        await confirm()
-    } finally {
-        isLoading.value = false
-    }
+  isLoading.value = true
+  try {
+    await confirm()
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const handleCancel = () => {
-    cancel()
+  cancel()
 }
 </script>
 
 <style scoped>
 .confirm-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9998;
-    animation: fadeIn 0.2s ease-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.7));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  animation: fadeIn 0.2s ease-out;
+  backdrop-filter: blur(6px);
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .confirm-dialog {
-    background: var(--color-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    max-width: 500px;
-    width: 90%;
-    padding: 0;
-    overflow: hidden;
-    animation: slideUp 0.3s ease-out;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent), var(--color-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  max-width: 520px;
+  width: 90%;
+  padding: 0;
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+  position: relative;
+}
+
+.confirm-dialog::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary), rgba(59, 130, 246, 0.15));
 }
 
 @keyframes slideUp {
-    from {
-        transform: translateY(50px);
-        opacity: 0;
-    }
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
 
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .confirm-header {
-    padding: 2rem 1.5rem 1rem;
-    text-align: center;
-    background: var(--color-accent);
-    border-bottom: 1px solid var(--color-border);
+  padding: 1.25rem 1.5rem 0.5rem;
+  text-align: left;
+  background: transparent;
 }
 
 .confirm-icon-wrapper {
-    display: inline-block;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
+  display: inline-flex;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.confirm-icon,
+.confirm-footer i {
+  font-family: "bootstrap-icons";
+  font-style: normal;
+  line-height: 1;
+  display: inline-block;
+}
+
+.confirm-footer i {
+  font-size: 14px;
 }
 
 .confirm-header .confirm-icon-wrapper {
-    background-color: var(--color-primary);
-    opacity: 0.2;
-    color: var(--color-primary);
+  background-color: var(--color-primary);
+  opacity: 0.2;
+  color: var(--color-primary);
 }
 
 .confirm-overlay :deep(.btn-danger)~.confirm-icon-wrapper {
-    background-color: var(--color-danger);
-    opacity: 0.2;
-    color: var(--color-danger);
+  background-color: var(--color-danger);
+  opacity: 0.2;
+  color: var(--color-danger);
 }
 
 .confirm-overlay :deep(.btn-info)~.confirm-icon-wrapper {
-    background-color: var(--color-primary);
-    opacity: 0.2;
-    color: var(--color-primary);
+  background-color: var(--color-primary);
+  opacity: 0.2;
+  color: var(--color-primary);
 }
 
 .confirm-body {
-    padding: 1.5rem;
-    text-align: center;
+  padding: 0.75rem 1.5rem 1.5rem;
+  text-align: left;
 }
 
 .confirm-title {
-    margin: 0 0 0.5rem;
-    font-weight: 600;
-    color: var(--color-text);
-    font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  font-size: 1.35rem;
 }
 
 .confirm-message {
-    margin: 0;
-    color: var(--color-muted);
-    font-size: 0.95rem;
-    line-height: 1.5;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.95rem;
+  line-height: 1.55;
 }
 
 .confirm-content {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
 }
 
 .confirm-footer {
-    padding: 1.5rem;
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    border-top: 1px solid var(--color-border);
+  padding: 1rem 1.5rem 1.5rem;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid var(--color-border);
 }
 
-.confirm-footer .btn {
-    min-width: 100px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
+.confirm-footer :deep(.btn) {
+  min-width: 120px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.confirm-footer :deep(.btn-outline-secondary) {
+  background: transparent;
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.confirm-footer :deep(.btn-outline-secondary:hover) {
+  background: var(--color-hover);
 }
 
 .btn-danger {
-    background-color: var(--color-danger);
-    border-color: var(--color-danger);
-    color: #fff;
+  background-color: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #fff;
 }
 
 .btn-info {
-    background-color: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #fff;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
 }
 
 .btn-warning {
-    background-color: #eab308;
-    border-color: #eab308;
-    color: #fff;
+  background-color: #eab308;
+  border-color: #eab308;
+  color: #fff;
 }
 
 .confirm-footer .btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 @media (max-width: 480px) {
-    .confirm-dialog {
-        width: 95%;
-    }
+  .confirm-dialog {
+    width: 95%;
+  }
 
-    .confirm-header {
-        padding: 1.5rem 1rem 0.75rem;
-    }
+  .confirm-header {
+    padding: 1.5rem 1rem 0.75rem;
+  }
 
-    .confirm-body {
-        padding: 1rem;
-    }
+  .confirm-body {
+    padding: 1rem;
+  }
 
-    .confirm-footer {
-        padding: 1rem;
-        flex-direction: column;
-    }
+  .confirm-footer {
+    padding: 1rem 1rem 1.25rem;
+    flex-direction: column;
+  }
 
-    .confirm-footer .btn {
-        width: 100%;
-    }
+  .confirm-footer .btn {
+    width: 100%;
+  }
 }
 </style>

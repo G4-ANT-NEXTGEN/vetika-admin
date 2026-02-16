@@ -157,10 +157,12 @@ import BaseModal from '@/components/ui/base/BaseModal.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
 import BaseInput from '@/components/ui/base/BaseInput.vue'
 import { useFormValidation, validationRules } from '@/composables/useFormValidation'
+import { useToast } from '@/composables/useToast'
 
 // --- State ---
 const schoolStore = useSchoolStore()
 const route = useRoute()
+const toast = useToast()
 const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
@@ -177,7 +179,10 @@ const form = reactive({
 })
 
 const { errors, validateField: validate, validate: validateAll, reset: resetValidation } = useFormValidation(form, {
-  name: [validationRules.required('School name is required')]
+  name: [
+    validationRules.required('School name is required'),
+    validationRules.maxLength(255, 'School name must be under 255 characters')
+  ]
 })
 
 // --- Breadcrumbs ---
@@ -253,19 +258,30 @@ const handleView = (item) => {
 const saveSchool = async () => {
   if (!validateAll()) return
 
-  if (isEditing.value) {
-    await schoolStore.editSchool(selectedItem.value.id, { name: form.name })
-  } else {
-    await schoolStore.createSchool({ name: form.name })
+  try {
+    if (isEditing.value) {
+      const res = await schoolStore.editSchool(selectedItem.value.id, { name: form.name })
+      toast.success(res?.message || 'School updated successfully')
+    } else {
+      const res = await schoolStore.createSchool({ name: form.name })
+      toast.success(res?.message || 'School created successfully')
+    }
+    showFormModal.value = false
+    await schoolStore.fetchSchools({ force: true })
+  } catch (err) {
+    toast.error(isEditing.value ? 'Failed to update school' : 'Failed to create school')
   }
-  showFormModal.value = false
-  await schoolStore.fetchSchools({ force: true })
 }
 
 const confirmDelete = async () => {
-  await schoolStore.deleteSchool(selectedItem.value.id)
-  showDeleteModal.value = false
-  await schoolStore.fetchSchools({ force: true })
+  try {
+    const res = await schoolStore.deleteSchool(selectedItem.value.id)
+    toast.success(res?.message || 'School deleted successfully')
+    showDeleteModal.value = false
+    await schoolStore.fetchSchools({ force: true })
+  } catch (err) {
+    toast.error('Failed to delete school')
+  }
 }
 
 const handleSearch = () => {

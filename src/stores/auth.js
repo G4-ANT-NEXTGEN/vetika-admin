@@ -10,22 +10,60 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuthenticated = computed(() => !!token.value && !!user.value);
 
   const login = async (payload) => {
-    const formData = new FormData();
-    formData.append('email_or_phone', payload.email);
-    formData.append('password', payload.password);
+    try {
+      const formData = new FormData();
+      formData.append('email_or_phone', payload.email);
+      formData.append('password', payload.password);
 
-    const res = await api.post("/api/login", formData);
+      const res = await api.post("/api/login", formData);
+      const resultFlag = res.data?.result;
 
-    token.value = res.data.data.token;
-    localStorage.setItem("token", token.value);
+      if (resultFlag === false || resultFlag === 'false') {
+        clearAuth();
+        throw new Error(res.data?.message || 'Login failed. Please check your credentials.');
+      }
 
-    await fetchProfile();
+      const tokenValue = res.data?.data?.token;
+      if (!tokenValue) {
+        clearAuth();
+        throw new Error(res.data?.message || 'Login failed. Missing token.');
+      }
 
-    // Verify if user has System Admin role
-    const hasAdminRole = user.value?.roles?.some(role => role.name === 'System Admin');
-    if (!hasAdminRole) {
-      clearAuth();
-      throw new Error('Unauthorized: Admin access required.');
+      token.value = tokenValue;
+      localStorage.setItem("token", token.value);
+
+      const lastLoginAt = localStorage.getItem("lastLoginAt");
+      if (lastLoginAt) {
+        localStorage.setItem("prevLoginAt", lastLoginAt);
+      }
+      localStorage.setItem("lastLoginAt", new Date().toISOString());
+
+      await fetchProfile();
+
+      // Verify if user has System Admin role
+      const hasAdminRole = user.value?.roles?.some(role => role.name === 'System Admin');
+      if (!hasAdminRole) {
+        clearAuth();
+        throw new Error('Unauthorized: Admin access required.');
+      }
+    } catch (error) {
+      const responseData = error?.response?.data;
+      let message = error?.message || 'Login failed. Please check your credentials.';
+
+      if (responseData) {
+        if (typeof responseData === 'string') {
+          message = responseData;
+        } else if (responseData.message) {
+          message = responseData.message;
+        } else if (responseData.error) {
+          message = responseData.error;
+        } else if (responseData.errors) {
+          const firstError = Object.values(responseData.errors).flat()[0];
+          if (firstError) message = firstError;
+        }
+      }
+
+      throw new Error(message);
     }
   };
 

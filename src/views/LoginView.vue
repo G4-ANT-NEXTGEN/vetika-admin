@@ -6,8 +6,7 @@
       <div class="login-left">
         <div class="login-left-content">
           <div class="login-logo">
-            <i class="bi bi-grid-3x3-gap"></i>
-            <span>NextGen</span>
+            <img src="/logo.png" alt="Vetika logo" />
           </div>
 
           <div class="login-hero">
@@ -16,10 +15,6 @@
               investors to connect, innovate, and grow together.</p>
           </div>
 
-          <a href="#" class="back-to-website">
-            <i class="bi bi-arrow-left"></i>
-            Back to Website
-          </a>
         </div>
       </div>
 
@@ -77,10 +72,15 @@ const form = reactive({
 });
 
 const { errors, validateField: validate, validate: validateAll } = useFormValidation(form, {
-  email: [validationRules.required('Email is required'), validationRules.email()],
+  email: [
+    validationRules.required('Email is required'),
+    validationRules.email(),
+    validationRules.maxLength(255, 'Email must be under 255 characters')
+  ],
   password: [
     validationRules.required('Password is required'),
-    validationRules.minLength(6, 'Password must be at least 6 characters')
+    validationRules.minLength(6, 'Password must be at least 6 characters'),
+    validationRules.maxLength(255, 'Password must be under 255 characters')
   ]
 });
 
@@ -205,12 +205,21 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   gap: 10px;
+  filter: brightness(0) invert(1);
   font-size: 20px;
-  font-weight: 700;
 }
 
-.login-logo i {
-  font-size: 28px;
+[data-theme="light"] .login-logo img {
+  filter: brightness(0) invert(0);
+}
+
+[data-theme="dark"] .login-logo img {
+  filter: brightness(0) invert(1);
+}
+
+.login-logo img {
+  width: 168px;
+  object-fit: contain;
 }
 
 .login-hero {
@@ -234,13 +243,6 @@ const handleLogin = async () => {
   margin: 0;
 }
 
-.back-to-website:hover {
-  color: #ffffff;
-}
-
-.back-to-website i {
-  font-size: 16px;
-}
 
 .login-right {
   flex: 1;
@@ -317,6 +319,17 @@ const handleLogin = async () => {
   color: #ffffff;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .login-btn {
+  background: #f8f8fc;
+  color: #111111;
+}
+
+[data-theme="dark"] .login-btn:hover:not(:disabled) {
+  background: #e5e7eb;
+  color: #111111;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
 }
 
 .login-btn:active:not(:disabled) {
