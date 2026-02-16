@@ -78,10 +78,6 @@
               <span class="insight-value">{{ dashboardStore.userStats.totalUsers }}</span>
             </div>
             <div class="insight-item">
-              <span class="insight-label">Verified</span>
-              <span class="insight-value">{{ dashboardStore.userStats.verifiedUsers }}</span>
-            </div>
-            <div class="insight-item">
               <span class="insight-label">New (30 days)</span>
               <span class="insight-value">{{ dashboardStore.userStats.newUsers }}</span>
             </div>
@@ -97,9 +93,6 @@
                 <span class="user-name">{{ user.full_name }}</span>
                 <span class="user-email">{{ user.email }}</span>
               </div>
-              <span class="user-status" :class="user.email_verified_at ? 'verified' : 'unverified'">
-                {{ user.email_verified_at ? 'Verified' : 'Unverified' }}
-              </span>
             </li>
           </ul>
         </div>
@@ -452,8 +445,12 @@ const handleQuickAction = (label) => {
 
 .charts {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 14px;
+}
+
+.charts>* {
+  min-width: 0;
 }
 
 @media (max-width: 1100px) {
@@ -482,6 +479,58 @@ const handleQuickAction = (label) => {
 
   .quick-actions .actions-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .custom-header {
+    padding: 28px !important;
+  }
+
+  .header-title {
+    font-size: 26px;
+  }
+
+  .subtext {
+    margin-bottom: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .custom-header {
+    padding: 22px !important;
+  }
+
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .cards-grid,
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .user-item {
+    grid-template-columns: 32px 1fr;
+    row-gap: 6px;
+  }
+
+  .user-status {
+    justify-self: start;
+  }
+
+  .user-email {
+    word-break: break-all;
   }
 }
 </style>

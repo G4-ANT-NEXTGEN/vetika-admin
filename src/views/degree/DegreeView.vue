@@ -157,10 +157,12 @@ import BaseModal from '@/components/ui/base/BaseModal.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
 import BaseInput from '@/components/ui/base/BaseInput.vue'
 import { useFormValidation, validationRules } from '@/composables/useFormValidation'
+import { useToast } from '@/composables/useToast'
 
 // --- State ---
 const degreeStore = useDegreeStore()
 const route = useRoute()
+const toast = useToast()
 const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
@@ -177,7 +179,10 @@ const form = reactive({
 })
 
 const { errors, validateField: validate, validate: validateAll, reset: resetValidation } = useFormValidation(form, {
-  name: [validationRules.required('Degree name is required')]
+  name: [
+    validationRules.required('Degree name is required'),
+    validationRules.maxLength(255, 'Degree name must be under 255 characters')
+  ]
 })
 
 // --- Breadcrumbs ---
@@ -253,19 +258,30 @@ const handleView = (item) => {
 const saveDegree = async () => {
   if (!validateAll()) return
 
-  if (isEditing.value) {
-    await degreeStore.editDegree(selectedItem.value.id, { name: form.name })
-  } else {
-    await degreeStore.createDegree({ name: form.name })
+  try {
+    if (isEditing.value) {
+      const res = await degreeStore.editDegree(selectedItem.value.id, { name: form.name })
+      toast.success(res?.message || 'Degree updated successfully')
+    } else {
+      const res = await degreeStore.createDegree({ name: form.name })
+      toast.success(res?.message || 'Degree created successfully')
+    }
+    showFormModal.value = false
+    await degreeStore.fetchDegrees({ force: true })
+  } catch (err) {
+    toast.error(isEditing.value ? 'Failed to update degree' : 'Failed to create degree')
   }
-  showFormModal.value = false
-  await degreeStore.fetchDegrees({ force: true })
 }
 
 const confirmDelete = async () => {
-  await degreeStore.deleteDegree(selectedItem.value.id)
-  showDeleteModal.value = false
-  await degreeStore.fetchDegrees({ force: true })
+  try {
+    const res = await degreeStore.deleteDegree(selectedItem.value.id)
+    toast.success(res?.message || 'Degree deleted successfully')
+    showDeleteModal.value = false
+    await degreeStore.fetchDegrees({ force: true })
+  } catch (err) {
+    toast.error('Failed to delete degree')
+  }
 }
 
 const handleSearch = () => {

@@ -157,10 +157,12 @@ import BaseModal from '@/components/ui/base/BaseModal.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
 import BaseInput from '@/components/ui/base/BaseInput.vue'
 import { useFormValidation, validationRules } from '@/composables/useFormValidation'
+import { useToast } from '@/composables/useToast'
 
 // --- State ---
 const skillStore = useSkillStore()
 const route = useRoute()
+const toast = useToast()
 const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
@@ -177,7 +179,10 @@ const form = reactive({
 })
 
 const { errors, validateField: validate, validate: validateAll, reset: resetValidation } = useFormValidation(form, {
-  name: [validationRules.required('Skill name is required')]
+  name: [
+    validationRules.required('Skill name is required'),
+    validationRules.maxLength(255, 'Skill name must be under 255 characters')
+  ]
 })
 
 // --- Breadcrumbs ---
@@ -253,19 +258,30 @@ const handleView = (item) => {
 const saveSkill = async () => {
   if (!validateAll()) return
 
-  if (isEditing.value) {
-    await skillStore.editSkill(selectedItem.value.id, { name: form.name })
-  } else {
-    await skillStore.createSkill({ name: form.name })
+  try {
+    if (isEditing.value) {
+      const res = await skillStore.editSkill(selectedItem.value.id, { name: form.name })
+      toast.success(res?.message || 'Skill updated successfully')
+    } else {
+      const res = await skillStore.createSkill({ name: form.name })
+      toast.success(res?.message || 'Skill created successfully')
+    }
+    showFormModal.value = false
+    await skillStore.fetchSkills({ force: true })
+  } catch (err) {
+    toast.error(isEditing.value ? 'Failed to update skill' : 'Failed to create skill')
   }
-  showFormModal.value = false
-  await skillStore.fetchSkills({ force: true })
 }
 
 const confirmDelete = async () => {
-  await skillStore.deleteSkill(selectedItem.value.id)
-  showDeleteModal.value = false
-  await skillStore.fetchSkills({ force: true })
+  try {
+    const res = await skillStore.deleteSkill(selectedItem.value.id)
+    toast.success(res?.message || 'Skill deleted successfully')
+    showDeleteModal.value = false
+    await skillStore.fetchSkills({ force: true })
+  } catch (err) {
+    toast.error('Failed to delete skill')
+  }
 }
 
 const handleSearch = () => {

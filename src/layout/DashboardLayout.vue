@@ -44,9 +44,12 @@ const handleLogout = async () => {
     <AppSidebar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar"
       @logout="handleLogout" />
 
+    <div class="sidebar-layer" :class="{ active: !isSidebarHidden }" @click="toggleSidebar"></div>
+
     <div class="main-wrapper" :class="{ 'sidebar-hidden': isSidebarHidden }">
       <!-- Top Navbar -->
-      <AppNavbar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar" @logout="handleLogout" />
+      <AppNavbar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar"
+        @logout="handleLogout" />
 
       <!-- Main Content Area -->
       <main class="main">

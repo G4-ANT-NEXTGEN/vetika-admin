@@ -1,14 +1,11 @@
 <template>
-  <aside class="sidebar" :class="{ 'hidden': isHidden }">
+  <aside class="sidebar" :class="{ hidden: isHidden, active: !isHidden }">
     <div class="sidebar-start">
       <div class="sidebar-head">
         <RouterLink to="/" class="logo-wrapper" title="Home">
           <span class="sr-only">Home</span>
           <img src="/logo.png" alt="logo" class="logo-icon" />
-          <div class="logo-text">
-            <span class="logo-title">Admin</span>
-            <span class="logo-subtitle">Dashboard</span>
-          </div>
+
         </RouterLink>
       </div>
       <div class="sidebar-body">
@@ -85,7 +82,7 @@ import { useRoute } from 'vue-router';
 
 defineProps({
   authToken: {
-    type: [String, Object], 
+    type: [String, Object],
     required: false,
     default: null
   },
@@ -129,8 +126,8 @@ watch(
 
 <style scoped>
 .logo-icon {
-  width: 38px;
-  height: 38px;
+  width: 68px;
+  height: 68px;
   object-fit: contain;
   flex-shrink: 0;
   transition: all 0.3s ease;

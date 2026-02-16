@@ -15,18 +15,24 @@ export const useUserStore = defineStore("user", () => {
   });
 
   const fetchUsers = async (page = 1, options = {}) => {
-    const { force = false } = options;
+    const { search, name, email } = options;
+    const params = { page };
+    const hasFilters = !!(search || name || email);
+
+    if (search) params.search = search;
+    if (name) params.name = name;
+    if (email) params.email = email;
 
     try {
       isLoading.value = true;
-      const res = await api.get(`/api/users?page=${page}`);
 
-      console.log('Users API Response:', res.data);
+      if (hasFilters) {
+        users.value = [];
+      }
+      const res = await api.get("/api/users", { params });
 
       const data = res.data;
       users.value = data.data || [];
-
-      console.log('Users loaded:', users.value.length);
 
       // Update pagination info
       pagination.value = {
@@ -81,7 +87,7 @@ export const useUserStore = defineStore("user", () => {
       });
       return res.data;
     } catch (err) {
-      console.log(err);
+      console.error("Error updating user:", err);
     } finally {
       isProcessing.value = false;
     }
@@ -93,7 +99,7 @@ export const useUserStore = defineStore("user", () => {
       const res = await api.delete(`/api/users/${id}`);
       return res.data;
     } catch (err) {
-      console.log(err);
+      console.error("Error deleting user:", err);
     } finally {
       isProcessing.value = false;
     }

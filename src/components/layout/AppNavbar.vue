@@ -5,10 +5,6 @@
         <button class="sidebar-toggle-navbar gray-circle-btn" type="button" @click="$emit('toggle-sidebar')" title="Toggle Sidebar">
           <i class="bi bi-list"></i>
         </button>
-        <div class="search-wrapper">
-          <i class="bi bi-search search-icon"></i>
-          <input type="text" id="searchInput" placeholder="Enter keywords ..." autocomplete="off" required>
-        </div>
       </div>
       <div class="main-nav-end">
         <button class="theme-switcher gray-circle-btn" type="button" title="Switch theme" @click="toggleTheme">

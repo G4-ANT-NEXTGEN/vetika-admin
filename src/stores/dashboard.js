@@ -12,6 +12,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
   const degrees = ref([]);
   const categories = ref([]);
   const users = ref([]);
+  const usersTotal = ref(0);
 
   const barChartData = computed(() => [
     { label: "Skills", height: skills.value.length || 0 },
@@ -19,7 +20,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     { label: "Degrees", height: degrees.value.length || 0 },
     { label: "Subjects", height: subjects.value.length || 0 },
     { label: "Categories", height: categories.value.length || 0 },
-    { label: "Users", height: users.value.length || 0 },
+    { label: "Users", height: usersTotal.value || 0 },
   ]);
 
   const progressData = computed(() => [
@@ -27,21 +28,20 @@ export const useDashboardStore = defineStore("dashboard", () => {
     { label: "Schools Goal", value: Math.min(Math.round((schools.value.length / 20) * 100), 100) },
     { label: "Degrees Goal", value: Math.min(Math.round((degrees.value.length / 10) * 100), 100) },
     { label: "Subjects Goal", value: Math.min(Math.round((subjects.value.length / 30) * 100), 100) },
-    { label: "Users Goal", value: Math.min(Math.round((users.value.length / 100) * 100), 100) },
+    { label: "Users Goal", value: Math.min(Math.round((usersTotal.value / 100) * 100), 100) },
   ]);
 
   const summaryData = computed(() => {
-    const total = skills.value.length + schools.value.length + degrees.value.length + subjects.value.length + categories.value.length + users.value.length;
+    const total = skills.value.length + schools.value.length + degrees.value.length + subjects.value.length + categories.value.length + usersTotal.value;
     return {
       dataAccuracy: "100%", // Logic can be added later
       totalRecords: total > 1000 ? (total / 1000).toFixed(1) + 'k' : total.toString(),
-      totalUsers: users.value.length.toString(),
-      verifiedUsers: users.value.filter((u) => u.email_verified_at).length.toString(),
+      totalUsers: usersTotal.value.toString(),
     };
   });
 
   const statCardsData = computed(() => [
-    { label: "Total Users", value: users.value.length, change: 9.4, icon: "bi-people-fill", iconBg: "blue" },
+    { label: "Total Users", value: usersTotal.value, change: 9.4, icon: "bi-people-fill", iconBg: "blue" },
     { label: "Total Skills", value: skills.value.length, change: 12.5, icon: "bi-lightbulb-fill", iconBg: "purple" },
     { label: "Total Schools", value: schools.value.length, change: 8.2, icon: "bi-building-fill", iconBg: "green" },
     { label: "Total Degrees", value: degrees.value.length, change: 3.1, icon: "bi-mortarboard-fill", iconBg: "yellow" },
@@ -49,14 +49,12 @@ export const useDashboardStore = defineStore("dashboard", () => {
   ]);
 
   const userStats = computed(() => {
-    const totalUsers = users.value.length;
-    const verifiedUsers = users.value.filter((u) => u.email_verified_at).length;
+    const totalUsers = usersTotal.value;
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const newUsers = users.value.filter((u) => new Date(u.created_at) > thirtyDaysAgo).length;
     return {
       totalUsers,
-      verifiedUsers,
       newUsers,
     };
   });
@@ -96,6 +94,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
       degrees.value = degreesRes.data?.data || degreesRes.data || [];
       categories.value = categoriesRes.data?.data || categoriesRes.data || [];
       users.value = usersRes.data?.data || usersRes.data?.data?.data || usersRes.data || [];
+      usersTotal.value = usersRes.data?.total || usersRes.data?.data?.total || users.value.length || 0;
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
       error.value = err.message || "Failed to load dashboard data";
@@ -113,6 +112,7 @@ export const useDashboardStore = defineStore("dashboard", () => {
     degrees,
     categories,
     users,
+    usersTotal,
     barChartData,
     progressData,
     summaryData,

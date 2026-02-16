@@ -157,10 +157,12 @@ import BaseModal from '@/components/ui/base/BaseModal.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
 import BaseInput from '@/components/ui/base/BaseInput.vue'
 import { useFormValidation, validationRules } from '@/composables/useFormValidation'
+import { useToast } from '@/composables/useToast'
 
 // --- State ---
 const subjectStore = useSubjectStore()
 const route = useRoute()
+const toast = useToast()
 const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
@@ -177,7 +179,10 @@ const form = reactive({
 })
 
 const { errors, validateField: validate, validate: validateAll, reset: resetValidation } = useFormValidation(form, {
-  name: [validationRules.required('Subject name is required')]
+  name: [
+    validationRules.required('Subject name is required'),
+    validationRules.maxLength(255, 'Subject name must be under 255 characters')
+  ]
 })
 
 // --- Breadcrumbs ---
@@ -253,19 +258,30 @@ const handleView = (item) => {
 const saveSubject = async () => {
   if (!validateAll()) return
 
-  if (isEditing.value) {
-    await subjectStore.editSubject(selectedItem.value.id, { name: form.name })
-  } else {
-    await subjectStore.createSubject({ name: form.name })
+  try {
+    if (isEditing.value) {
+      const res = await subjectStore.editSubject(selectedItem.value.id, { name: form.name })
+      toast.success(res?.message || 'Subject updated successfully')
+    } else {
+      const res = await subjectStore.createSubject({ name: form.name })
+      toast.success(res?.message || 'Subject created successfully')
+    }
+    showFormModal.value = false
+    await subjectStore.fetchSubjects({ force: true })
+  } catch (err) {
+    toast.error(isEditing.value ? 'Failed to update subject' : 'Failed to create subject')
   }
-  showFormModal.value = false
-  await subjectStore.fetchSubjects({ force: true })
 }
 
 const confirmDelete = async () => {
-  await subjectStore.deleteSubject(selectedItem.value.id)
-  showDeleteModal.value = false
-  await subjectStore.fetchSubjects({ force: true })
+  try {
+    const res = await subjectStore.deleteSubject(selectedItem.value.id)
+    toast.success(res?.message || 'Subject deleted successfully')
+    showDeleteModal.value = false
+    await subjectStore.fetchSubjects({ force: true })
+  } catch (err) {
+    toast.error('Failed to delete subject')
+  }
 }
 
 const handleSearch = () => {

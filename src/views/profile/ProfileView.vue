@@ -4,8 +4,13 @@
 
     <!-- Profile Header / Hero Section -->
     <BaseCard class="profile-hero-card" :no-padding="true">
-      <div class="hero-cover">
+      <div class="hero-cover" @click="openCoverModal">
+        <img v-if="profileStore.user?.cover" :src="profileStore.user.cover" alt="Cover" class="cover-image" />
         <div class="topographic-pattern"></div>
+        <div class="cover-overlay">
+          <i class="bi bi-camera-fill"></i>
+          <span>Change cover</span>
+        </div>
       </div>
       <div v-if="profileStore.isLoading" class="hero-content">
         <div class="profile-identity">
@@ -106,6 +111,45 @@
         <button class="modal-btn confirm" :disabled="profileStore.isProcessing" @click="savePersonalInfo">
           <span v-if="profileStore.isProcessing" class="spinner-border spinner-border-sm me-2"></span>
           {{ profileStore.isProcessing ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </template>
+    </BaseModal>
+
+    <!-- Edit Cover Image Modal -->
+    <BaseModal :show="showCoverModal" title="Update Cover Image" subtitle="Upload a new cover image"
+      @close="closeCoverModal">
+      <template #header-icon>
+        <div class="header-icon-box">
+          <i class="bi bi-image"></i>
+        </div>
+      </template>
+
+      <div class="cover-modal-body">
+        <div class="cover-modal-preview">
+          <img v-if="coverPreview" :src="coverPreview" alt="Cover preview" class="cover-modal-image" />
+          <div v-else class="cover-modal-placeholder">
+            <i class="bi bi-image"></i>
+            <span>No cover image</span>
+          </div>
+        </div>
+
+        <div class="cover-upload-actions">
+          <button class="modal-btn cancel" type="button" @click="triggerCoverPicker">Choose Image</button>
+          <span v-if="coverFileName" class="cover-file-name">{{ coverFileName }}</span>
+        </div>
+        <input type="file" ref="coverFileInput" @change="handleCoverFileChange" style="display: none"
+          accept="image/*" />
+        <p class="cover-upload-hint">Max file size 5MB. Recommended size 1200x400.</p>
+      </div>
+
+      <template #footer>
+        <button class="modal-btn cancel" @click="closeCoverModal">Cancel</button>
+        <button class="view-cover-btn" type="button" :disabled="!coverFullUrl" @click="openCoverFull">
+          View Full Image
+        </button>
+        <button class="modal-btn confirm" :disabled="!coverFile || profileStore.isProcessing" @click="uploadCoverFile">
+          <span v-if="profileStore.isProcessing" class="spinner-border spinner-border-sm me-2"></span>
+          {{ profileStore.isProcessing ? 'Uploading...' : 'Update Cover' }}
         </button>
       </template>
     </BaseModal>
@@ -291,7 +335,7 @@
               </div>
               <div class="status-text">
                 <span class="lbl">Last Login</span>
-                <span class="val">{{ formatCompactDate(profileStore.user?.last_login_at) }}</span>
+                <span class="val">{{ lastLoginDisplay }}</span>
               </div>
             </div>
           </div>
@@ -325,38 +369,6 @@
           </div>
         </BaseCard>
 
-        <BaseCard class="sidebar-info-card">
-          <h4 class="sidebar-title">Connected Data</h4>
-          <div class="status-list">
-            <div class="status-item">
-              <div class="status-icon blue">
-                <i class="bi bi-lightbulb"></i>
-              </div>
-              <div class="status-text">
-                <span class="lbl">Skills Linked</span>
-                <span class="val">{{ profileStore.user?.skills_count ?? 0 }}</span>
-              </div>
-            </div>
-            <div class="status-item">
-              <div class="status-icon green">
-                <i class="bi bi-building"></i>
-              </div>
-              <div class="status-text">
-                <span class="lbl">Schools Linked</span>
-                <span class="val">{{ profileStore.user?.schools_count ?? 0 }}</span>
-              </div>
-            </div>
-            <div class="status-item">
-              <div class="status-icon purple">
-                <i class="bi bi-journal"></i>
-              </div>
-              <div class="status-text">
-                <span class="lbl">Subjects Linked</span>
-                <span class="val">{{ profileStore.user?.subjects_count ?? 0 }}</span>
-              </div>
-            </div>
-          </div>
-        </BaseCard>
       </aside>
     </div>
   </div>
@@ -381,6 +393,16 @@ const confirm = useConfirm()
 const activeTab = ref('overview')
 const fileInput = ref(null)
 const showEditModal = ref(false)
+const showCoverModal = ref(false)
+const coverFileInput = ref(null)
+const coverFile = ref(null)
+const coverPreview = ref('')
+const coverObjectUrl = ref('')
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+
+const coverFileName = computed(() => coverFile.value?.name || '')
+const coverFullUrl = computed(() => coverPreview.value || profileStore.user?.cover || '')
 
 watch(activeTab, (newTab) => {
   if (newTab === 'security') {
@@ -408,10 +430,25 @@ const {
   validateField: validatePersonalField,
   validate: validateAllPersonal
 } = useFormValidation(personalForm, {
-  full_name: [validationRules.required('Full name is required')],
-  email: [validationRules.required('Email is required'), validationRules.email()],
-  phone: [validationRules.required('Phone number is required')],
-  portfolio_link: [validationRules.url('Please enter a valid URL (https://...)')]
+  full_name: [
+    validationRules.required('Full name is required'),
+    validationRules.maxLength(255, 'Full name must be under 255 characters')
+  ],
+  email: [
+    validationRules.required('Email is required'),
+    validationRules.email(),
+    validationRules.maxLength(255, 'Email must be under 255 characters')
+  ],
+  phone: [
+    validationRules.required('Phone number is required'),
+    validationRules.maxLength(255, 'Phone number must be under 255 characters')
+  ],
+  current_city: [validationRules.maxLength(255, 'City must be under 255 characters')],
+  home_town: [validationRules.maxLength(255, 'Home town must be under 255 characters')],
+  portfolio_link: [
+    validationRules.url('Please enter a valid URL (https://...)'),
+    validationRules.maxLength(255, 'Portfolio link must be under 255 characters')
+  ]
 })
 
 const passwordForm = reactive({
@@ -473,11 +510,6 @@ const savePersonalInfo = async () => {
 
   try {
     const payload = { ...personalForm }
-    // Clean up empty strings to null
-    Object.keys(payload).forEach(key => {
-      if (payload[key] === '') payload[key] = null
-    })
-
     await profileStore.updatePersonalInfo(payload)
     showEditModal.value = false
     toast.success('Profile updated successfully!')
@@ -513,9 +545,46 @@ const triggerUpload = () => {
   fileInput.value.click()
 }
 
+const openCoverModal = () => {
+  if (coverObjectUrl.value) {
+    URL.revokeObjectURL(coverObjectUrl.value)
+    coverObjectUrl.value = ''
+  }
+  const currentCover = profileStore.user?.cover || ''
+  coverPreview.value = currentCover
+  coverFile.value = null
+  showCoverModal.value = true
+}
+
+const closeCoverModal = () => {
+  if (coverObjectUrl.value) {
+    URL.revokeObjectURL(coverObjectUrl.value)
+    coverObjectUrl.value = ''
+  }
+  if (coverFileInput.value) {
+    coverFileInput.value.value = ''
+  }
+  coverFile.value = null
+  showCoverModal.value = false
+}
+
+const triggerCoverPicker = () => {
+  coverFileInput.value?.click()
+}
+
 const handleFileUpload = async (event) => {
   const file = event.target.files[0]
   if (file) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      toast.error('Avatar must be a JPG, PNG, GIF, or WebP image')
+      event.target.value = ''
+      return
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error('Avatar image must be 5MB or smaller')
+      event.target.value = ''
+      return
+    }
     try {
       await profileStore.uploadAvatar(file)
       toast.success('Avatar updated successfully!')
@@ -524,6 +593,50 @@ const handleFileUpload = async (event) => {
       toast.error('Failed to upload avatar')
     }
   }
+}
+
+const handleCoverFileChange = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    toast.error('Cover must be a JPG, PNG, GIF, or WebP image')
+    event.target.value = ''
+    return
+  }
+  if (file.size > MAX_IMAGE_BYTES) {
+    toast.error('Cover image must be 5MB or smaller')
+    event.target.value = ''
+    return
+  }
+
+  if (coverObjectUrl.value) {
+    URL.revokeObjectURL(coverObjectUrl.value)
+  }
+  coverFile.value = file
+  coverObjectUrl.value = URL.createObjectURL(file)
+  coverPreview.value = coverObjectUrl.value
+}
+
+const uploadCoverFile = async () => {
+  if (!coverFile.value) return
+  try {
+    await profileStore.uploadCover(coverFile.value)
+    toast.success('Cover updated successfully!')
+    closeCoverModal()
+  } catch (err) {
+    console.error(err)
+    if (err.response?.status === 422) {
+      toast.error(err.response?.data?.message || 'Cover image is too large')
+    } else {
+      toast.error('Failed to upload cover')
+    }
+  }
+}
+
+const openCoverFull = () => {
+  if (!coverFullUrl.value) return
+  window.open(coverFullUrl.value, '_blank', 'noopener')
 }
 
 const removeAvatar = () => {
@@ -566,10 +679,12 @@ const formatDate = (dateStr) => {
 const formatCompactDate = (dateStr) => {
   if (!dateStr) return 'Not available'
   const date = new Date(dateStr)
-  return date.toLocaleDateString('en-US', {
+  return date.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
-    year: 'numeric'
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   })
 }
 
@@ -589,6 +704,11 @@ const profileCompletion = computed(() => {
   const fields = profileFields()
   const filled = fields.filter((f) => f.value).length
   return fields.length ? Math.round((filled / fields.length) * 100) : 0
+})
+
+const lastLoginDisplay = computed(() => {
+  const localLastLogin = localStorage.getItem('prevLoginAt') || localStorage.getItem('lastLoginAt')
+  return formatCompactDate(profileStore.user?.last_login_at || localLastLogin)
 })
 
 const missingFields = computed(() => {
@@ -632,6 +752,15 @@ const recentUpdates = computed(() => {
   background: var(--nav-bg);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+}
+
+.cover-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .topographic-pattern {
@@ -642,10 +771,101 @@ const recentUpdates = computed(() => {
     linear-gradient(var(--color-text) 1px, transparent 1px),
     linear-gradient(90deg, var(--color-text) 1px, transparent 1px);
   background-size: 20px 20px;
+  z-index: 1;
 }
 
 [data-theme='dark'] .topographic-pattern {
   opacity: 0.05;
+}
+
+.cover-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.hero-cover:hover .cover-overlay {
+  opacity: 1;
+}
+
+.cover-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cover-modal-preview {
+  height: 180px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--nav-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cover-modal-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-modal-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.cover-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cover-file-name {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.cover-upload-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.view-cover-btn {
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-cover-btn:hover {
+  background: var(--nav-surface);
+}
+
+.view-cover-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .hero-content {

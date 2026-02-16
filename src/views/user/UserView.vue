@@ -22,17 +22,32 @@
     <div class="stats-grid">
       <StatCard label="Total Users" :value="userStore.pagination.total" icon="bi-people" iconColor="blue"
         :isLoading="userStore.isLoading" />
-      <StatCard label="Active Users" :value="activeUsersCount" icon="bi-person-check" iconColor="green"
-        :isLoading="userStore.isLoading" />
       <StatCard label="New This Month" :value="newUsersCount" icon="bi-person-plus" iconColor="yellow"
         :isLoading="userStore.isLoading" />
     </div>
 
     <!-- Search & Filter Section -->
     <div class="search-section">
-      <div class="search-box">
-        <i class="bi bi-search"></i>
-        <input v-model="searchQuery" type="text" placeholder="Search by name or email..." />
+      <div class="search-row">
+        <div class="search-box">
+          <i class="bi bi-search"></i>
+          <input v-model="searchQuery" type="text" placeholder="Search..." />
+        </div>
+        <button class="filter-toggle" type="button" @click="showAdvanced = !showAdvanced">
+          <i class="bi" :class="showAdvanced ? 'bi-funnel-fill' : 'bi-funnel'"></i>
+          Advanced
+        </button>
+      </div>
+
+      <div v-if="showAdvanced" class="advanced-filters">
+        <div class="search-box">
+          <i class="bi bi-person"></i>
+          <input v-model="nameQuery" type="text" placeholder="Filter by name" />
+        </div>
+        <div class="search-box">
+          <i class="bi bi-envelope"></i>
+          <input v-model="emailQuery" type="text" placeholder="Filter by email" />
+        </div>
       </div>
     </div>
 
@@ -77,11 +92,6 @@
             </div>
 
             <!-- Status Badge -->
-            <div class="status-section">
-              <span class="status-badge" :class="user.email_verified_at ? 'verified' : 'pending'">
-                {{ user.email_verified_at ? 'Verified' : 'Pending' }}
-              </span>
-            </div>
 
           </div>
         </div>
@@ -95,11 +105,6 @@
           <div class="table-avatar">
             <img :src="getAvatarUrl(item.avatar)" :alt="item.full_name" @error="handleImageError" />
           </div>
-        </template>
-        <template #column-status="{ item }">
-          <span class="status-badge" :class="item.email_verified_at ? 'verified' : 'pending'">
-            {{ item.email_verified_at ? 'Verified' : 'Pending' }}
-          </span>
         </template>
       </BaseTable>
     </div>
@@ -188,12 +193,6 @@
             </a>
           </div>
           <div class="detail-card">
-            <label><i class="bi bi-check-circle"></i> Email Status</label>
-            <span class="status-badge" :class="selectedUser.email_verified_at ? 'verified' : 'pending'">
-              {{ selectedUser.email_verified_at ? 'Verified' : 'Pending' }}
-            </span>
-          </div>
-          <div class="detail-card">
             <label><i class="bi bi-calendar-event"></i> Created Date</label>
             <p>{{ formatDate(selectedUser.created_at) }}</p>
           </div>
@@ -208,7 +207,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/users'
 import BaseTable from '@/components/ui/base/BaseTable.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
@@ -219,9 +218,13 @@ import StatCard from '@/components/ui/StatCard.vue'
 const userStore = useUserStore()
 const viewMode = ref('grid')
 const searchQuery = ref('')
+const nameQuery = ref('')
+const emailQuery = ref('')
+const showAdvanced = ref(false)
 const showViewModal = ref(false)
 const selectedUser = ref(null)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://novia2.csm.linkpc.net'
+const searchTimer = ref(null)
 
 const getAvatarUrl = (avatar) => {
   if (!avatar || avatar === 'no_photo.jpg') {
@@ -242,33 +245,17 @@ const tableColumns = [
   { key: 'full_name', label: 'Full Name' },
   { key: 'email', label: 'Email' },
   { key: 'phone', label: 'Phone', width: '150px' },
-  { key: 'status', label: 'Status', width: '120px' },
 ]
 
 onMounted(async () => {
-  console.log('UserView mounted, fetching users...')
   try {
     await userStore.fetchUsers(1)
-    console.log('Users fetched successfully:', userStore.users.length)
   } catch (error) {
     console.error('Failed to fetch users:', error)
   }
 })
 
-const filteredUsers = computed(() => {
-  if (!searchQuery.value.trim()) return userStore.users
-
-  const query = searchQuery.value.toLowerCase()
-  return userStore.users.filter(user =>
-    user.full_name.toLowerCase().includes(query) ||
-    user.email.toLowerCase().includes(query) ||
-    (user.phone && user.phone.includes(query))
-  )
-})
-
-const activeUsersCount = computed(() => {
-  return userStore.users.filter(u => u.email_verified_at).length
-})
+const filteredUsers = computed(() => userStore.users)
 
 const newUsersCount = computed(() => {
   const thirtyDaysAgo = new Date()
@@ -282,8 +269,25 @@ const viewUser = (user) => {
 }
 
 const changePage = (page) => {
-  userStore.fetchUsers(page)
+  userStore.fetchUsers(page, {
+    search: searchQuery.value.trim(),
+    name: nameQuery.value.trim(),
+    email: emailQuery.value.trim()
+  })
 }
+
+watch([searchQuery, nameQuery, emailQuery], () => {
+  if (searchTimer.value) {
+    clearTimeout(searchTimer.value)
+  }
+  searchTimer.value = setTimeout(() => {
+    userStore.fetchUsers(1, {
+      search: searchQuery.value.trim(),
+      name: nameQuery.value.trim(),
+      email: emailQuery.value.trim()
+    })
+  }, 400)
+})
 
 const formatDate = (date) => {
   if (!date) return 'N/A'
@@ -375,12 +379,25 @@ const handleImageError = (e) => {
 
 .search-section {
   display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.advanced-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
 .search-box {
-  flex: 1;
-  max-width: 400px;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -403,6 +420,36 @@ const handleImageError = (e) => {
 
 .search-box input::placeholder {
   color: var(--color-muted);
+}
+
+.filter-toggle {
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--nav-surface);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-toggle:hover {
+  background: var(--color-hover);
+}
+
+@media (max-width: 640px) {
+  .search-row {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-toggle {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* Grid View */
@@ -642,7 +689,7 @@ const handleImageError = (e) => {
 
 .user-details {
   display: grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns: 360px 1fr;
   gap: 16px;
   align-items: start;
 }
@@ -667,7 +714,7 @@ const handleImageError = (e) => {
 
 .detail-cover {
   width: 100%;
-  height: 130px;
+  height: 170px;
   border-radius: 12px;
   overflow: hidden;
   background: linear-gradient(135deg, #4a4a4a, #5a5a5a);
@@ -686,8 +733,8 @@ const handleImageError = (e) => {
 }
 
 .detail-avatar img {
-  width: 96px;
-  height: 96px;
+  width: 124px;
+  height: 124px;
   border-radius: 50%;
   border: 4px solid var(--nav-surface);
   object-fit: cover;
