@@ -26,31 +26,6 @@
         :isLoading="userStore.isLoading" />
     </div>
 
-    <!-- Search & Filter Section -->
-    <div class="search-section">
-      <div class="search-row">
-        <div class="search-box">
-          <i class="bi bi-search"></i>
-          <input v-model="searchQuery" type="text" placeholder="Search..." />
-        </div>
-        <button class="filter-toggle" type="button" @click="showAdvanced = !showAdvanced">
-          <i class="bi" :class="showAdvanced ? 'bi-funnel-fill' : 'bi-funnel'"></i>
-          Advanced
-        </button>
-      </div>
-
-      <div v-if="showAdvanced" class="advanced-filters">
-        <div class="search-box">
-          <i class="bi bi-person"></i>
-          <input v-model="nameQuery" type="text" placeholder="Filter by name" />
-        </div>
-        <div class="search-box">
-          <i class="bi bi-envelope"></i>
-          <input v-model="emailQuery" type="text" placeholder="Filter by email" />
-        </div>
-      </div>
-    </div>
-
     <!-- Grid View (Cards) -->
     <div v-if="viewMode === 'grid'" class="users-grid-container">
       <div v-if="userStore.isLoading" class="loading-grid">
@@ -207,7 +182,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/users'
 import BaseTable from '@/components/ui/base/BaseTable.vue'
 import BasePagination from '@/components/ui/base/BasePagination.vue'
@@ -217,14 +192,9 @@ import StatCard from '@/components/ui/StatCard.vue'
 
 const userStore = useUserStore()
 const viewMode = ref('grid')
-const searchQuery = ref('')
-const nameQuery = ref('')
-const emailQuery = ref('')
-const showAdvanced = ref(false)
 const showViewModal = ref(false)
 const selectedUser = ref(null)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://novia2.csm.linkpc.net'
-const searchTimer = ref(null)
 
 const getAvatarUrl = (avatar) => {
   if (!avatar || avatar === 'no_photo.jpg') {
@@ -269,25 +239,8 @@ const viewUser = (user) => {
 }
 
 const changePage = (page) => {
-  userStore.fetchUsers(page, {
-    search: searchQuery.value.trim(),
-    name: nameQuery.value.trim(),
-    email: emailQuery.value.trim()
-  })
+  userStore.fetchUsers(page)
 }
-
-watch([searchQuery, nameQuery, emailQuery], () => {
-  if (searchTimer.value) {
-    clearTimeout(searchTimer.value)
-  }
-  searchTimer.value = setTimeout(() => {
-    userStore.fetchUsers(1, {
-      search: searchQuery.value.trim(),
-      name: nameQuery.value.trim(),
-      email: emailQuery.value.trim()
-    })
-  }, 400)
-})
 
 const formatDate = (date) => {
   if (!date) return 'N/A'
@@ -375,81 +328,6 @@ const handleImageError = (e) => {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
-}
-
-.search-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.search-row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
-
-.advanced-filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 12px;
-}
-
-.search-box {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  background: var(--nav-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  color: var(--color-muted);
-}
-
-.search-box input {
-  flex: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  color: var(--color-text);
-  padding: 12px 0;
-  font-size: 14px;
-}
-
-.search-box input::placeholder {
-  color: var(--color-muted);
-}
-
-.filter-toggle {
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  background: var(--nav-surface);
-  color: var(--color-text);
-  font-size: 13px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.filter-toggle:hover {
-  background: var(--color-hover);
-}
-
-@media (max-width: 640px) {
-  .search-row {
-    grid-template-columns: 1fr;
-  }
-
-  .filter-toggle {
-    width: 100%;
-    justify-content: center;
-  }
 }
 
 /* Grid View */
