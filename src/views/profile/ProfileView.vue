@@ -92,7 +92,6 @@
         <BaseSelect v-model="personalForm.gender" label="Gender" :options="[
           { value: 0, label: 'Female' },
           { value: 1, label: 'Male' },
-          { value: 2, label: 'Other' }
         ]" :error="personalFormErrors.gender" @blur="validatePersonalField('gender')" />
 
         <BaseInput v-model="personalForm.current_city" label="Current City" type="text" placeholder="Enter city"
@@ -279,22 +278,20 @@
 
             <form class="security-form" @submit.prevent="updatePassword">
               <!-- Hidden username field for accessibility and password managers -->
-              <input type="email" :value="profileStore.user?.email" autocomplete="username" name="username"
+              <input type="email" :value="profileStore.user?.email" autocomplete="off" name="username"
                 style="display: none;" readonly>
               <BaseInput v-model="passwordForm.old_pass" label="Current Password" type="password"
                 placeholder="Enter current password" :error="passwordFormErrors.old_pass"
-                @blur="validatePasswordField('old_pass')" autocomplete="current-password" name="current-password"
-                class="mb-4" />
+                @blur="validatePasswordField('old_pass')" autocomplete="off" name="current-password" class="mb-4" />
 
               <BaseInput v-model="passwordForm.new_pass" label="New Password" type="password"
                 placeholder="Enter new password" :error="passwordFormErrors.new_pass"
-                @blur="validatePasswordField('new_pass')" autocomplete="new-password" name="new-password"
-                class="mb-4" />
+                @blur="validatePasswordField('new_pass')" autocomplete="off" name="new-password" class="mb-4" />
 
               <BaseInput v-model="passwordForm.new_pass_confirmation" label="Confirm New Password" type="password"
                 placeholder="Confirm new password" :error="passwordFormErrors.new_pass_confirmation"
-                @blur="validatePasswordField('new_pass_confirmation')" autocomplete="new-password"
-                name="confirm-password" class="mb-4" />
+                @blur="validatePasswordField('new_pass_confirmation')" autocomplete="off" name="confirm-password"
+                class="mb-4" />
 
               <button type="submit" class="modal-btn confirm btn-update" :disabled="profileStore.isProcessing">
                 <span v-if="profileStore.isProcessing" class="spinner-border spinner-border-sm me-2"></span>
@@ -407,10 +404,9 @@ const coverFullUrl = computed(() => coverPreview.value || profileStore.user?.cov
 watch(activeTab, (newTab) => {
   if (newTab === 'security') {
     resetPasswordValidation()
-    // Optional: clear form values if needed, but keeping them might be desired
-    // passwordForm.old_pass = ''
-    // passwordForm.new_pass = ''
-    // passwordForm.new_pass_confirmation = ''
+    passwordForm.old_pass = ''
+    passwordForm.new_pass = ''
+    passwordForm.new_pass_confirmation = ''
   }
 })
 
@@ -466,7 +462,13 @@ const {
   old_pass: [validationRules.required('Current password is required')],
   new_pass: [
     validationRules.required('New password is required'),
-    validationRules.minLength(6, 'Password must be at least 6 characters')
+    validationRules.minLength(8, 'Password must be at least 8 characters'),
+    validationRules.maxLength(255, 'Password must be under 255 characters'),
+    validationRules.pattern(
+      '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^A-Za-z0-9]).+$',
+      'Use upper, lower, number, and special character'
+    ),
+    (value) => value !== passwordForm.old_pass || 'New password must be different from current password'
   ],
   new_pass_confirmation: [
     validationRules.required('Please confirm your new password'),
@@ -526,15 +528,35 @@ const updatePassword = async () => {
   }
 
   try {
-    await profileStore.changePassword(passwordForm)
+    const res = await profileStore.changePassword(passwordForm)
+    if (res?.result === false || res?.success === false || res?.status === false || res?.error || res?.errors) {
+      const fieldError =
+        res?.data?.old_pass?.[0] ||
+        res?.data?.new_pass?.[0] ||
+        res?.data?.new_pass_confirmation?.[0]
+      const message =
+        fieldError ||
+        res?.message ||
+        res?.error ||
+        (typeof res?.errors === 'string' ? res.errors : '') ||
+        'Incorrect current password'
+      toast.error(message)
+      passwordForm.old_pass = ''
+      passwordForm.new_pass = ''
+      passwordForm.new_pass_confirmation = ''
+      return
+    }
     passwordForm.old_pass = ''
     passwordForm.new_pass = ''
     passwordForm.new_pass_confirmation = ''
-    toast.success('Password updated successfully!')
+    toast.success(res?.message || 'Password updated successfully!')
   } catch (err) {
     console.error(err)
     if (err.response?.status === 422) {
       toast.error(err.response.data.message || 'Incorrect current password')
+      passwordForm.old_pass = ''
+      passwordForm.new_pass = ''
+      passwordForm.new_pass_confirmation = ''
     } else {
       toast.error('Failed to update password')
     }

@@ -7,6 +7,7 @@ export const useUserStore = defineStore("user", () => {
   const selectedUser = ref(null);
   const isLoading = ref(false);
   const isProcessing = ref(false);
+  const usersCache = new Map();
   const pagination = ref({
     currentPage: 1,
     lastPage: 1,
@@ -14,14 +15,22 @@ export const useUserStore = defineStore("user", () => {
     perPage: 20,
   });
 
-  const fetchUsers = async (page = 1, options = {}) => {
+  const fetchUsers = async (page = 1, options = {}, force = false) => {
     const { search, name, email } = options;
     const params = { page };
     const hasFilters = !!(search || name || email);
+    const cacheKey = JSON.stringify({ page, search: search || "", name: name || "", email: email || "" });
 
     if (search) params.search = search;
     if (name) params.name = name;
     if (email) params.email = email;
+
+    if (!force && usersCache.has(cacheKey)) {
+      const cached = usersCache.get(cacheKey);
+      users.value = cached.users;
+      pagination.value = cached.pagination;
+      return;
+    }
 
     try {
       isLoading.value = true;
@@ -41,6 +50,11 @@ export const useUserStore = defineStore("user", () => {
         total: data.total || 0,
         perPage: data.per_page || 20,
       };
+
+      usersCache.set(cacheKey, {
+        users: users.value,
+        pagination: pagination.value,
+      });
     } catch (err) {
       console.error("Error fetching users:", err);
       users.value = [];
@@ -85,6 +99,7 @@ export const useUserStore = defineStore("user", () => {
           'Content-Type': 'multipart/form-data',
         },
       });
+      usersCache.clear();
       return res.data;
     } catch (err) {
       console.error("Error updating user:", err);
@@ -97,6 +112,7 @@ export const useUserStore = defineStore("user", () => {
     try {
       isProcessing.value = true;
       const res = await api.delete(`/api/users/${id}`);
+      usersCache.clear();
       return res.data;
     } catch (err) {
       console.error("Error deleting user:", err);

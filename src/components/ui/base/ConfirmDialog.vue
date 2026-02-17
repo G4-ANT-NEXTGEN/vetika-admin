@@ -3,7 +3,7 @@
     <div v-if="isVisible" class="confirm-overlay" @click.self="handleCancel">
       <div class="confirm-dialog">
         <div class="confirm-header">
-          <div class="confirm-icon-wrapper">
+          <div :class="['confirm-icon-wrapper', type]">
             <i :class="['bi', dialogIcon, 'confirm-icon']"></i>
           </div>
         </div>
@@ -165,7 +165,9 @@ const handleCancel = () => {
   justify-content: center;
   font-size: 22px;
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(59, 130, 246, 0.35);
+  color: #fff;
+  border-color: rgba(59, 130, 246, 0.6);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
 }
 
@@ -177,26 +179,31 @@ const handleCancel = () => {
   display: inline-block;
 }
 
+.confirm-icon {
+  font-size: 22px;
+  color: inherit;
+}
+
 .confirm-footer i {
   font-size: 14px;
 }
 
-.confirm-header .confirm-icon-wrapper {
-  background-color: var(--color-primary);
-  opacity: 0.2;
-  color: var(--color-primary);
+.confirm-icon-wrapper.danger {
+  background: rgba(239, 68, 68, 0.35);
+  color: #fff;
+  border-color: rgba(239, 68, 68, 0.6);
 }
 
-.confirm-overlay :deep(.btn-danger)~.confirm-icon-wrapper {
-  background-color: var(--color-danger);
-  opacity: 0.2;
-  color: var(--color-danger);
+.confirm-icon-wrapper.warning {
+  background: rgba(234, 179, 8, 0.4);
+  color: #fff;
+  border-color: rgba(234, 179, 8, 0.6);
 }
 
-.confirm-overlay :deep(.btn-info)~.confirm-icon-wrapper {
-  background-color: var(--color-primary);
-  opacity: 0.2;
-  color: var(--color-primary);
+.confirm-icon-wrapper.info {
+  background: rgba(59, 130, 246, 0.35);
+  color: #fff;
+  border-color: rgba(59, 130, 246, 0.6);
 }
 
 .confirm-body {

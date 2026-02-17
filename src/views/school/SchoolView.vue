@@ -12,10 +12,6 @@
       </button>
     </header>
 
-    <div class="action-bar-container">
-      <BaseSearch v-model="searchQuery" placeholder="Search schools..." @search="handleSearch" />
-    </div>
-
     <BaseCard class="table-card-wrapper">
       <BaseTable :columns="columns" :items="paginatedSchools" :is-loading="schoolStore.isLoading" @view="handleView"
         @edit="handleEdit" @delete="handleDelete">
@@ -149,7 +145,6 @@ import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useSchoolStore } from '@/stores/schools'
 import BreadcrumbNav from '@/components/ui/BreadcrumbNav.vue'
-import BaseSearch from '@/components/ui/BaseSearch.vue'
 import BaseTable from '@/components/ui/base/BaseTable.vue'
 import BaseCard from '@/components/ui/base/BaseCard.vue'
 import StatCard from '@/components/ui/StatCard.vue'
@@ -163,7 +158,6 @@ import { useToast } from '@/composables/useToast'
 const schoolStore = useSchoolStore()
 const route = useRoute()
 const toast = useToast()
-const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
 const showDeleteModal = ref(false)
@@ -284,9 +278,6 @@ const confirmDelete = async () => {
   }
 }
 
-const handleSearch = () => {
-  console.log('Searching:', searchQuery.value)
-}
 
 const formatDate = (date) => {
   if (!date) return 'Jan 15, 2026'

@@ -1,5 +1,5 @@
 <template>
-  <div class="analytics-page">
+  <div ref="analyticsRef" class="analytics-page">
     <header class="page-header custom-header">
       <div class="header-content">
         <div class="eyebrow-wrapper">
@@ -299,7 +299,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import BaseCard from '@/components/ui/base/BaseCard.vue'
 import DonutChart from '@/components/charts/DonutChart.vue'
@@ -310,6 +310,7 @@ const dashboardStore = useDashboardStore()
 const syncSpeed = ref(149)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://novia2.csm.linkpc.net'
 const lastRefresh = ref(null)
+const analyticsRef = ref(null)
 
 onMounted(() => {
   if (!dashboardStore.skills.length) {
@@ -469,8 +470,63 @@ const getAvatarUrl = (avatar) => {
   return `${API_BASE_URL}/storage/avatars/${avatar}`
 }
 
-const exportHighRes = () => {
-  window.print()
+const exportHighRes = async () => {
+  if (!analyticsRef.value) return
+  await nextTick()
+
+  const source = analyticsRef.value
+  const clone = source.cloneNode(true)
+
+  const sourceCanvases = source.querySelectorAll('canvas')
+  const cloneCanvases = clone.querySelectorAll('canvas')
+
+  sourceCanvases.forEach((canvas, index) => {
+    const dataUrl = canvas.toDataURL('image/png')
+    const img = document.createElement('img')
+    img.src = dataUrl
+    img.style.width = '100%'
+    img.style.height = 'auto'
+    if (cloneCanvases[index]) {
+      cloneCanvases[index].replaceWith(img)
+    }
+  })
+
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) return
+
+  const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
+    .map((node) => node.outerHTML)
+    .join('')
+
+  printWindow.document.write(`
+    <!doctype html>
+    <html>
+      <head>
+        <title>Analytics Report</title>
+        ${styles}
+        <style>
+          @media print {
+            .header-actions, .btn { display: none !important; }
+            .analytics-page { display: block !important; padding: 0 !important; }
+            .kpi-strip, .analytics-grid, .analytics-insights-grid, .analytics-footer-grid {
+              display: block !important;
+              width: 100% !important;
+            }
+            .kpi-card, .analytics-card { page-break-inside: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        ${clone.outerHTML}
+      </body>
+    </html>
+  `)
+  printWindow.document.close()
+  printWindow.onload = () => {
+    printWindow.focus()
+    printWindow.print()
+    printWindow.close()
+  }
 }
 </script>
 
@@ -486,8 +542,26 @@ const exportHighRes = () => {
   }
 
   .analytics-page {
+    display: block !important;
     padding: 0 !important;
     gap: 15px !important;
+    color: #000 !important;
+    background: #fff !important;
+  }
+
+  .kpi-strip,
+  .analytics-grid,
+  .analytics-insights-grid,
+  .analytics-footer-grid {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  .kpi-card,
+  .analytics-card {
+    background: #fff !important;
+    color: #000 !important;
+    page-break-inside: avoid;
   }
 
   .custom-header {

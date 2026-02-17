@@ -12,10 +12,6 @@
       </button>
     </header>
 
-    <div class="action-bar-container">
-      <BaseSearch v-model="searchQuery" placeholder="Search categories..." @search="handleSearch" />
-    </div>
-
     <BaseCard class="table-card-wrapper">
       <BaseTable :columns="columns" :items="paginatedCategories" :is-loading="categoryStore.isLoading"
         @view="handleView" @edit="handleEdit" @delete="handleDelete">
@@ -61,7 +57,7 @@
       </div>
 
       <div class="form-group">
-        <label class="form-label">Category Image</label>
+        <label class="form-label mt-3">Category Image</label>
         <div class="image-upload-wrapper">
           <div v-if="imagePreview" class="image-preview">
             <img :src="imagePreview" alt="Preview" class="preview-image" />
@@ -72,15 +68,16 @@
               <i class="bi bi-trash"></i>
             </button>
           </div>
-          <div v-else class="upload-box" @click="$refs.fileInput.click()">
+          <div v-else class="upload-box" @click="triggerFileInput">
             <div class="upload-box-content">
               <i class="bi bi-cloud-upload upload-box-icon"></i>
               <p class="upload-box-text">Click to upload or drag image</p>
               <p class="upload-box-hint">PNG, JPG, GIF up to 5MB</p>
             </div>
-            <input ref="fileInput" type="file" accept="image/*" @change="handleImageUpload" />
           </div>
         </div>
+        <input ref="fileInput" type="file" accept="image/*" @change="handleImageUpload" style="display: none" />
+        <span v-if="imageError" class="input-error">{{ imageError }}</span>
       </div>
 
       <template #footer>
@@ -182,7 +179,6 @@ import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCategoryStore } from '@/stores/categories'
 import BreadcrumbNav from '@/components/ui/BreadcrumbNav.vue'
-import BaseSearch from '@/components/ui/BaseSearch.vue'
 import BaseTable from '@/components/ui/base/BaseTable.vue'
 import BaseCard from '@/components/ui/base/BaseCard.vue'
 import StatCard from '@/components/ui/StatCard.vue'
@@ -196,7 +192,6 @@ import { useToast } from '@/composables/useToast'
 const categoryStore = useCategoryStore()
 const route = useRoute()
 const toast = useToast()
-const searchQuery = ref('')
 const showFormModal = ref(false)
 const showDetailsModal = ref(false)
 const showDeleteModal = ref(false)
@@ -214,6 +209,7 @@ const form = reactive({
 
 const imagePreview = ref(null)
 const fileInput = ref(null)
+const imageError = ref('')
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
@@ -280,6 +276,7 @@ const openCreateModal = () => {
   form.name = ''
   form.image = null
   imagePreview.value = null
+  imageError.value = ''
   resetValidation()
   showFormModal.value = true
 }
@@ -290,6 +287,7 @@ const handleEdit = (item) => {
   form.name = item.name
   form.image = null
   imagePreview.value = item.image || null
+  imageError.value = ''
   resetValidation()
   showFormModal.value = true
 }
@@ -297,6 +295,7 @@ const handleEdit = (item) => {
 const handleImageUpload = (event) => {
   const file = event.target.files?.[0]
   if (file) {
+    imageError.value = ''
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
       toast.error('Image must be a JPG, PNG, GIF, or WebP file')
       event.target.value = ''
@@ -321,6 +320,7 @@ const handleImageUpload = (event) => {
 const removeImage = () => {
   form.image = null
   imagePreview.value = null
+  imageError.value = ''
   if (fileInput.value) {
     fileInput.value.value = ''
   }
@@ -338,6 +338,10 @@ const handleView = (item) => {
 
 const saveCategory = async () => {
   if (!validateAll()) return
+  if (!(form.image instanceof File) && !imagePreview.value) {
+    imageError.value = 'Category image is required'
+    return
+  }
 
   const payload = {
     name: form.name,
@@ -374,9 +378,6 @@ const confirmDelete = async () => {
   }
 }
 
-const handleSearch = () => {
-  console.log('Searching:', searchQuery.value)
-}
 
 const formatDate = (date) => {
   if (!date) return 'Jan 15, 2026'
@@ -467,6 +468,12 @@ const getStatusClass = (status) => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.input-error {
+  color: #ef4444;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .modal-btn {
