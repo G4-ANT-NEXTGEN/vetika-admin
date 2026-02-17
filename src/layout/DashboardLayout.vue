@@ -1,3 +1,30 @@
+<template>
+  <div class="page-flex">
+    <AppSidebar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar"
+      @logout="handleLogout" />
+
+    <div class="sidebar-layer" :class="{ active: !isSidebarHidden }" @click="toggleSidebar"></div>
+
+    <div class="main-wrapper" :class="{ 'sidebar-hidden': isSidebarHidden }">
+      <AppNavbar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar"
+        @logout="handleLogout" />
+
+      <main class="main">
+        <div class="container-fluid">
+          <router-view />
+        </div>
+      </main>
+
+      <footer class="footer">
+        <div class="container footer--flex">
+          <div class="footer-start">
+            <p>2026 © Admin Dashboard VETIKA</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </div>
+</template>
 <script setup>
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
@@ -38,45 +65,7 @@ const handleLogout = async () => {
 }
 </script>
 
-<template>
-  <div class="page-flex">
-    <!-- Sidebar -->
-    <AppSidebar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar"
-      @logout="handleLogout" />
-
-    <div class="sidebar-layer" :class="{ active: !isSidebarHidden }" @click="toggleSidebar"></div>
-
-    <div class="main-wrapper" :class="{ 'sidebar-hidden': isSidebarHidden }">
-      <!-- Top Navbar -->
-      <AppNavbar :authToken="authStore.token" :is-hidden="isSidebarHidden" @toggle-sidebar="toggleSidebar"
-        @logout="handleLogout" />
-
-      <!-- Main Content Area -->
-      <main class="main">
-        <div class="container-fluid">
-          <router-view />
-        </div>
-      </main>
-
-      <!-- Footer (Optional) -->
-      <footer class="footer">
-        <div class="container footer--flex">
-          <div class="footer-start">
-            <p>2026 © Admin Dashboard SMOS</p>
-          </div>
-          <ul class="footer-end">
-            <li><a href="##">About</a></li>
-            <li><a href="##">Support</a></li>
-            <li><a href="##">Purchase</a></li>
-          </ul>
-        </div>
-      </footer>
-    </div>
-  </div>
-</template>
-
 <style scoped>
-/* Component-specific overrides only */
 .main {
   flex-grow: 1;
   padding: 20px 0;

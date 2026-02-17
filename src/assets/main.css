@@ -731,6 +731,27 @@ body {
 
 @media print {
 
+  @page {
+    margin: 16mm;
+  }
+
+  :root,
+  [data-theme="dark"],
+  [data-theme="light"] {
+    --color-text: #000 !important;
+    --color-background: #fff !important;
+    --color-border: #ddd !important;
+    --color-muted: #333 !important;
+    --nav-bg: #fff !important;
+    --nav-surface: #fff !important;
+    --sidebar-bg: #fff !important;
+    --sidebar-text: #000 !important;
+    --sidebar-muted: #333 !important;
+    --sidebar-border: #ddd !important;
+    --color-secondary: #fff !important;
+    --color-accent: #fff !important;
+  }
+
   .sidebar,
   .main-nav,
   .footer,
@@ -742,9 +763,33 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+  }
+
+  .main,
+  .main-wrapper,
+  .container,
+  .container-fluid {
+    background: #fff !important;
+    color: #000 !important;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  .page-flex {
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  body * {
+    color: #000 !important;
+    -webkit-text-fill-color: #000 !important;
   }
 
   body {
     background-color: #fff !important;
   }
+
 }

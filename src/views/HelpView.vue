@@ -17,9 +17,6 @@
                     <i class="bi bi-house-fill"></i>
                     Back to Dashboard
                 </RouterLink>
-                <a class="btn outline" href="mailto:support@nextgen.local">
-                    Contact Support
-                </a>
             </div>
         </header>
 
