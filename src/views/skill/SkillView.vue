@@ -197,7 +197,6 @@ const columns = [
 onMounted(async () => {
   await skillStore.fetchSkills()
 
-  // Open create modal if redirected from dashboard quick actions
   if (route.query.action === 'create') {
     openCreateModal()
   }

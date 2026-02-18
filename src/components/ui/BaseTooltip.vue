@@ -68,7 +68,6 @@ const updatePosition = () => {
     const tooltip = document.querySelector('.tooltip')
     if (!tooltip) return
 
-    // Position tooltip relative to trigger
     const offset = 8
     const positions = {
         top: {

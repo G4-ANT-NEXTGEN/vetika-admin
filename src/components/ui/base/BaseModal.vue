@@ -44,17 +44,32 @@
 </template>
 
 <script setup>
-defineProps({
+import { watch, onUnmounted } from 'vue'
+
+const props = defineProps({
   show: Boolean,
   title: String,
   subtitle: String,
-  size: { type: String, default: 'md' }, // sm, md, lg
+  size: { type: String, default: 'md' }, // sm, md, lg, xl
   variant: { type: String, default: 'standard' }, // standard, pattern
   hasPatternHeader: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close'])
 const close = () => emit('close')
+
+// Body Scroll Lock - Prevent background scrolling when modal is open
+watch(() => props.show, (isVisible) => {
+  if (isVisible) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+}, { immediate: true })
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+})
 </script>
 
 <style scoped>
@@ -64,9 +79,11 @@ const close = () => emit('close')
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   z-index: 9999;
+  overflow-y: auto;
+  padding: 40px 20px;
 }
 
 [data-theme="dark"] .modal-overlay {
@@ -76,13 +93,15 @@ const close = () => emit('close')
 .modal-container {
   background: var(--nav-bg);
   border-radius: 20px;
-  width: 90%;
+  width: 100%;
   max-width: 500px;
-  max-height: 90vh;
   position: relative;
-  overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .modal-container.lg {
@@ -109,6 +128,7 @@ const close = () => emit('close')
   flex-direction: column;
   justify-content: flex-end;
   position: relative;
+  flex-shrink: 0;
 }
 
 .close-btn.circle {
@@ -135,6 +155,7 @@ const close = () => emit('close')
   justify-content: space-between;
   align-items: flex-start;
   border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
 }
 
 .title-with-icon {
@@ -186,13 +207,13 @@ const close = () => emit('close')
 /* Body & Footer */
 .modal-body {
   padding: 30px;
-  overflow-y: auto;
 }
 
 .modal-footer {
   padding: 0 30px 30px 30px;
   display: flex;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 /* Transitions */

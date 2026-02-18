@@ -11,12 +11,6 @@ export const useActivityStore = defineStore("activity", () => {
     isLoading.value = true;
     error.value = null;
     try {
-      // --- FUTURE ENDPOINT INTEGRATION ---
-      // Once you have the endpoint, uncomment the lines below and adjust the URL
-      // const res = await api.get("/api/activities");
-      // activities.value = res.data?.data || res.data || [];
-
-      // For now, we use high-end mock data to keep the UI looking professional
       activities.value = [
         {
           id: 1,

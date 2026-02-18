@@ -57,7 +57,6 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import EmptyState from '@/components/common/EmptyState.vue'
 
 const props = defineProps({
-    // Page Config
     title: {
         type: String,
         required: true,
@@ -65,17 +64,16 @@ const props = defineProps({
     description: String,
     breadcrumbs: Array,
 
-    // Button Config
     addButtonText: {
         type: String,
         default: 'Add New',
     },
 
-    // Search Config
     showSearch: {
         type: Boolean,
         default: true,
     },
+
     searchPlaceholder: {
         type: String,
         default: 'Search...',
@@ -85,7 +83,6 @@ const props = defineProps({
         default: () => ['name'],
     },
 
-    // Table Config
     columns: {
         type: Array,
         required: true,
@@ -99,7 +96,6 @@ const props = defineProps({
         default: false,
     },
 
-    // Pagination Config
     showPagination: {
         type: Boolean,
         default: true,
@@ -109,7 +105,7 @@ const props = defineProps({
         default: 10,
     },
 
-    // Modal Config
+
     modalTitle: {
         type: String,
         default: 'Form',
@@ -119,7 +115,7 @@ const props = defineProps({
         default: 'Details',
     },
 
-    // Messages
+
     emptyStateMessage: {
         type: String,
         default: 'No items found. Create one to get started.',
@@ -161,7 +157,6 @@ const filteredItems = computed(() => {
         return filteredItems.value.slice(start, end)
     })
 
-    // Methods
     const handleAdd = () => {
         editingItem.value = null
         showModal.value = true

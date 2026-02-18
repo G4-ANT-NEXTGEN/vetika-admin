@@ -115,7 +115,6 @@ const handleLogin = async () => {
     });
     router.push({ name: "dashboard" });
   } catch (error) {
-    // Extract the most descriptive error message possible
     const errorData = error.response?.data;
     let errorMessage = error.message || 'Login failed. Please check your credentials.';
 
@@ -127,7 +126,6 @@ const handleLogin = async () => {
       } else if (errorData.error) {
         errorMessage = errorData.error;
       } else if (errorData.errors) {
-        // Handle validation errors (422) by taking the first error message
         const firstError = Object.values(errorData.errors).flat()[0];
         if (firstError) errorMessage = firstError;
       }

@@ -474,14 +474,12 @@ const exportHighRes = async () => {
   if (!analyticsRef.value) return
   await nextTick()
 
-  // 1. Prepare canvases (High-res capture)
   const source = analyticsRef.value
   const sourceCanvases = source.querySelectorAll('canvas')
   const canvasImages = Array.from(sourceCanvases).map(canvas => {
     return canvas.toDataURL('image/png', 1.0)
   })
 
-  // 2. Clone and replace
   const clone = source.cloneNode(true)
   const cloneCanvases = clone.querySelectorAll('canvas')
   cloneCanvases.forEach((canvas, index) => {
@@ -492,12 +490,10 @@ const exportHighRes = async () => {
     canvas.replaceWith(img)
   })
 
-  // 3. Gather styles - Include original styles to maintain layout
   const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
     .map(node => node.outerHTML)
     .join('\n')
 
-  // 4. Create print window with proper document structure
   const printWindow = window.open('', '_blank')
   if (!printWindow) {
     alert('Please allow popups for this website to export the report.')
@@ -596,13 +592,11 @@ const exportHighRes = async () => {
   `)
   printWindow.document.close()
 
-  // Inject content safely
   const reportContainer = printWindow.document.getElementById('report-content')
   if (reportContainer) {
     reportContainer.innerHTML = clone.innerHTML
   }
 
-  // Inject print script safely
   const script = printWindow.document.createElement('script')
   script.textContent = `
     window.onload = () => {

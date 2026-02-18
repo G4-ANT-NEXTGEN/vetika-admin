@@ -244,7 +244,6 @@ const columns = [
 onMounted(async () => {
   await categoryStore.fetchCategories()
 
-  // Open create modal if redirected from dashboard quick actions
   if (route.query.action === 'create') {
     openCreateModal()
   }
@@ -265,7 +264,6 @@ const paginatedCategories = computed(() => {
   return (categoryStore.categories || []).slice(start, end)
 })
 
-// Reset pagination when data changes
 watch(() => categoryStore.categories?.length, () => {
   currentPage.value = 1
 })

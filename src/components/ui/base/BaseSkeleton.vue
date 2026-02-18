@@ -12,7 +12,7 @@ import { computed } from 'vue'
 const props = defineProps({
   type: {
     type: String,
-    default: 'rect', // rect, circle, line
+    default: 'rect',
   },
   width: {
     type: String,

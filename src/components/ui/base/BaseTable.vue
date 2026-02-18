@@ -58,7 +58,7 @@ import BaseSkeleton from './BaseSkeleton.vue'
 defineProps({
   columns: {
     type: Array,
-    required: true // Format: [{ key: 'id', label: 'ID', width: '80px' }]
+    required: true
   },
   items: {
     type: Array,

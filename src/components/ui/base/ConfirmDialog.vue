@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch, onUnmounted } from 'vue'
 import { useConfirm } from '@/composables/useConfirm'
 
 const { confirmState, confirm, cancel } = useConfirm()
@@ -87,6 +87,19 @@ const handleConfirm = async () => {
 const handleCancel = () => {
   cancel()
 }
+
+// Body Scroll Lock
+watch(() => isVisible.value, (visible) => {
+  if (visible) {
+    document.body.style.overflow = 'hidden'
+  } else {
+    document.body.style.overflow = ''
+  }
+}, { immediate: true })
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+})
 </script>
 
 <style scoped>

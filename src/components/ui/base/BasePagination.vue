@@ -71,7 +71,7 @@ const paginationItems = computed(() => {
   const total = totalPages.value;
   const current = props.page;
 
-  if (total <= 5) { // Show up to 5 pages directly
+  if (total <= 5) {
     for (let i = 1; i <= total; i++) {
       pages.push(i);
     }
