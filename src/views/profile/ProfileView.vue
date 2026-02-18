@@ -90,8 +90,8 @@
           @blur="validatePersonalField('dob')" />
 
         <BaseSelect v-model="personalForm.gender" label="Gender" :options="[
-          { value: 0, label: 'Female' },
           { value: 1, label: 'Male' },
+          { value: 2, label: 'Female' },
         ]" :error="personalFormErrors.gender" @blur="validatePersonalField('gender')" />
 
         <BaseInput v-model="personalForm.current_city" label="Current City" type="text" placeholder="Enter city"
@@ -145,6 +145,11 @@
         <button class="modal-btn cancel" @click="closeCoverModal">Cancel</button>
         <button class="view-cover-btn" type="button" :disabled="!coverFullUrl" @click="openCoverFull">
           View Full Image
+        </button>
+        <button v-if="coverFullUrl" class="cover-delete-btn" type="button" :disabled="profileStore.isProcessing"
+          @click="removeCover">
+          <i class="bi bi-trash"></i>
+          Remove Cover
         </button>
         <button class="modal-btn confirm" :disabled="!coverFile || profileStore.isProcessing" @click="uploadCoverFile">
           <span v-if="profileStore.isProcessing" class="spinner-border spinner-border-sm me-2"></span>
@@ -415,7 +420,7 @@ const personalForm = reactive({
   phone: '',
   email: '',
   dob: '',
-  gender: 0,
+  gender: null,
   current_city: '',
   home_town: '',
   portfolio_link: ''
@@ -497,7 +502,7 @@ const openEditModal = () => {
   personalForm.phone = u?.phone || ''
   personalForm.email = u?.email || ''
   personalForm.dob = u?.dob || ''
-  personalForm.gender = u?.gender || 0
+  personalForm.gender = u?.gender ?? null
   personalForm.current_city = u?.current_city || ''
   personalForm.home_town = u?.home_town || ''
   personalForm.portfolio_link = u?.portfolio_link || ''
@@ -660,6 +665,29 @@ const openCoverFull = () => {
   window.open(coverFullUrl.value, '_blank', 'noopener')
 }
 
+const removeCover = () => {
+  confirm.show({
+    title: 'Remove Cover?',
+    message: 'Are you sure you want to remove your cover image?',
+    type: 'danger',
+    confirmText: 'Remove Cover',
+    onConfirm: async () => {
+      try {
+        const res = await profileStore.removeCover()
+        coverPreview.value = ''
+        coverFile.value = null
+        if (coverFileInput.value) {
+          coverFileInput.value.value = ''
+        }
+        toast.success(res?.message || 'Cover removed successfully!')
+      } catch (err) {
+        console.error(err)
+        toast.error('Failed to remove cover')
+      }
+    }
+  })
+}
+
 const removeAvatar = () => {
   confirm.show({
     title: 'Remove Photo?',
@@ -680,9 +708,8 @@ const removeAvatar = () => {
 
 const getGenderLabel = (gender) => {
   const labels = {
-    0: 'Female',
     1: 'Male',
-    2: 'Other'
+    2: 'Female'
   }
   return labels[gender] || '-'
 }
@@ -886,6 +913,30 @@ const recentUpdates = computed(() => {
 
 .view-cover-btn:disabled {
   opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cover-delete-btn {
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.cover-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.cover-delete-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 

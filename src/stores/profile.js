@@ -75,6 +75,20 @@ export const useProfileStore = defineStore("profile", () => {
     }
   };
 
+  const removeCover = async () => {
+    isProcessing.value = true;
+    try {
+      const res = await api.delete("/api/profile/cover");
+      await fetchProfile();
+      return res.data;
+    } catch (error) {
+      console.error("Failed to remove cover:", error);
+      throw error;
+    } finally {
+      isProcessing.value = false;
+    }
+  };
+
   const updatePersonalInfo = async (payload) => {
     isProcessing.value = true;
     try {
@@ -145,6 +159,7 @@ export const useProfileStore = defineStore("profile", () => {
     uploadAvatar,
     uploadCover,
     removeAvatar,
+    removeCover,
     updatePersonalInfo,
     updateProfessionalInfo,
     changePassword,
