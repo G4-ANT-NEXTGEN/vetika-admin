@@ -422,6 +422,7 @@ const handleImageError = (e) => {
 }
 
 .avatar-section {
+  position: relative;
   display: flex;
   justify-content: center;
 }

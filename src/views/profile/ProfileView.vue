@@ -523,7 +523,6 @@ const savePersonalInfo = async () => {
 
 const updatePassword = async () => {
   if (!validateAllPassword()) {
-    toast.error('Please fix the password errors')
     return
   }
 

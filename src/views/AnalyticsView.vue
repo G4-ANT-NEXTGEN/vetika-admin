@@ -474,59 +474,146 @@ const exportHighRes = async () => {
   if (!analyticsRef.value) return
   await nextTick()
 
+  // 1. Prepare canvases (High-res capture)
   const source = analyticsRef.value
-  const clone = source.cloneNode(true)
-
   const sourceCanvases = source.querySelectorAll('canvas')
-  const cloneCanvases = clone.querySelectorAll('canvas')
-
-  sourceCanvases.forEach((canvas, index) => {
-    const dataUrl = canvas.toDataURL('image/png')
-    const img = document.createElement('img')
-    img.src = dataUrl
-    img.style.width = '100%'
-    img.style.height = 'auto'
-    if (cloneCanvases[index]) {
-      cloneCanvases[index].replaceWith(img)
-    }
+  const canvasImages = Array.from(sourceCanvases).map(canvas => {
+    return canvas.toDataURL('image/png', 1.0)
   })
 
-  const printWindow = window.open('', '_blank')
-  if (!printWindow) return
+  // 2. Clone and replace
+  const clone = source.cloneNode(true)
+  const cloneCanvases = clone.querySelectorAll('canvas')
+  cloneCanvases.forEach((canvas, index) => {
+    const img = document.createElement('img')
+    img.src = canvasImages[index]
+    img.style.width = '100%'
+    img.style.height = 'auto'
+    canvas.replaceWith(img)
+  })
 
+  // 3. Gather styles - Include original styles to maintain layout
   const styles = Array.from(document.querySelectorAll('style, link[rel="stylesheet"]'))
-    .map((node) => node.outerHTML)
-    .join('')
+    .map(node => node.outerHTML)
+    .join('\n')
 
+  // 4. Create print window with proper document structure
+  const printWindow = window.open('', '_blank')
+  if (!printWindow) {
+    alert('Please allow popups for this website to export the report.')
+    return
+  }
+
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light'
+  const today = new Date().toLocaleDateString('en-US', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  })
+
+  printWindow.document.open()
   printWindow.document.write(`
-    <!doctype html>
-    <html>
-      <head>
-        <title>Analytics Report</title>
-        ${styles}
-        <style>
-          @media print {
-            .header-actions, .btn { display: none !important; }
-            .analytics-page { display: block !important; padding: 0 !important; }
-            .kpi-strip, .analytics-grid, .analytics-insights-grid, .analytics-footer-grid {
-              display: block !important;
-              width: 100% !important;
-            }
-            .kpi-card, .analytics-card { page-break-inside: avoid; }
-          }
-        </style>
-      </head>
-      <body>
-        ${clone.outerHTML}
-      </body>
+    <!DOCTYPE html>
+    <html data-theme="${currentTheme}">
+    <head>
+      <title>Analytics Report - ${today}</title>
+      <meta charset="UTF-8">
+      ${styles}
+      <style>
+        @page { size: auto; margin: 20mm 15mm; }
+        body {
+          background: var(--color-background, #fff) !important;
+          color: var(--color-text, #000) !important;
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', -apple-system, sans-serif;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+        }
+        .analytics-page {
+          display: block !important;
+          padding: 20px !important;
+          max-width: 1100px;
+          margin: 0 auto;
+          flex-grow: 1;
+        }
+        .header-actions, .btn, .eyebrow-wrapper .icon-circle { display: none !important; }
+        .custom-header {
+          border-bottom: 2px solid var(--color-border, #eee) !important;
+          margin-bottom: 30px !important;
+          padding: 20px 0 !important;
+          background: transparent !important;
+        }
+        .analytics-card {
+          break-inside: avoid;
+          margin-bottom: 25px !important;
+          border: 1px solid var(--color-border, #eee) !important;
+          box-shadow: none !important;
+          background: var(--nav-bg, #fff) !important;
+        }
+        .report-footer {
+          margin-top: 40px;
+          padding: 20px;
+          border-top: 1px solid var(--color-border, #eee);
+          text-align: center;
+          font-size: 11px;
+          color: var(--color-muted, #666);
+          break-before: auto;
+        }
+        .kpi-strip {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 20px !important;
+          margin-bottom: 30px !important;
+        }
+        .analytics-grid {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 25px !important;
+          margin-bottom: 30px !important;
+        }
+        .analytics-insights-grid {
+          display: grid !important;
+          grid-template-columns: repeat(2, 1fr) !important;
+          gap: 20px !important;
+          margin-bottom: 30px !important;
+        }
+        .analytics-footer-grid {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr !important;
+          gap: 25px !important;
+        }
+        * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        .metric-row strong { color: var(--color-text, #000) !important; }
+      </style>
+    </head>
+    <body class="printable-report">
+      <div id="report-content" class="analytics-page"></div>
+      <footer class="report-footer">
+        Generated on ${today} • NextGen Analytics System
+      </footer>
+    </body>
     </html>
   `)
   printWindow.document.close()
-  printWindow.onload = () => {
-    printWindow.focus()
-    printWindow.print()
-    printWindow.close()
+
+  // Inject content safely
+  const reportContainer = printWindow.document.getElementById('report-content')
+  if (reportContainer) {
+    reportContainer.innerHTML = clone.innerHTML
   }
+
+  // Inject print script safely
+  const script = printWindow.document.createElement('script')
+  script.textContent = `
+    window.onload = () => {
+      setTimeout(() => {
+        window.focus();
+        window.print();
+        window.close();
+      }, 1000);
+    };
+  `
+  printWindow.document.body.appendChild(script)
 }
 </script>
 

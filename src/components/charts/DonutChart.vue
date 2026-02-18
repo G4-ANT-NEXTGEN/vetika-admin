@@ -3,22 +3,12 @@
     <div class="donut-main">
       <div class="donut-wrapper">
         <svg viewBox="0 0 100 100" class="donut-svg">
-          <circle
-            v-for="(segment, index) in chartSegments"
-            :key="index"
-            class="donut-segment"
-            cx="50"
-            cy="50"
-            r="40"
-            fill="transparent"
-            :stroke="segment.color"
-            stroke-width="12"
-            :stroke-dasharray="segment.dashArray"
-            :stroke-dashoffset="segment.dashOffset"
-          />
+          <circle v-for="(segment, index) in chartSegments" :key="index" class="donut-segment" cx="50" cy="50" r="40"
+            fill="transparent" :stroke="segment.color" stroke-width="12" :stroke-dasharray="segment.dashArray"
+            :stroke-dashoffset="segment.dashOffset" />
           <text x="50" y="50" class="donut-center-text">
-            <tspan x="50" dy="-2" class="total-count">{{ total }}</tspan>
-            <tspan x="50" dy="15" class="total-label">Items</tspan>
+            <tspan x="50" dy="-4" class="total-count">{{ total }}</tspan>
+            <tspan x="50" dy="18" class="total-label">Items</tspan>
           </text>
         </svg>
       </div>
@@ -98,17 +88,20 @@ const chartSegments = computed(() => {
 
 .donut-center-text {
   text-anchor: middle;
+  dominant-baseline: central;
+  transform: rotate(90deg);
+  transform-origin: center;
   fill: var(--color-text);
 }
 
 .total-count {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 800;
 }
 
 .total-label {
-  font-size: 8px;
-  font-weight: 500;
+  font-size: 10px;
+  font-weight: 600;
   fill: var(--color-muted);
 }
 
